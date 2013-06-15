@@ -1,7 +1,7 @@
 {
   "name": "replacestream",
   "version": "0.0.1",
-  "description": "A node.js through stream that does basic text search and replace and is chunk boundary friendly",
+  "description": "A node.js through stream that does basic streaming text search and replace and is chunk boundary friendly",
   "main": "index.js",
   "scripts": {
     "test": "node_modules/.bin/mocha"
