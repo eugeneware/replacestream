@@ -13,6 +13,8 @@ $ npm install replacestream
 
 ## Examples
 
+### Search and replace over a test file
+
 Say we want to do a search and replace over the following file:
 
 ```
@@ -62,6 +64,49 @@ Happy earthday to you!
 Happy birthday to dear Liza!
 Happy birthday to you!
 ```
+
+### Web server search and replace over a test file
+
+Here's the same example, but kicked off from a HTTP server:
+
+``` js
+// server.js
+var http = require('http')
+  , fs = require('fs')
+  , path = require('path')
+  , replaceStream = require('replacestream');
+
+var app = function (req, res) {
+  if (req.url.match(/^\/happybirthday\.txt$/)) {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    fs.createReadStream(path.join(__dirname, 'happybirthday.txt'))
+      .pipe(replaceStream('birthday', 'earthday'))
+      .pipe(res);
+  } else {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('File not found');
+  }
+};
+var server = http.createServer(app).listen(3000);
+```
+
+When you request the file:
+```
+$ curl -i "http://localhost:3000/happybirthday.txt"
+HTTP/1.1 200 OK
+Content-Type: text/plain
+Date: Mon, 08 Jul 2013 06:45:21 GMT
+Connection: keep-alive
+Transfer-Encoding: chunked
+
+Happy earthday to you!
+Happy earthday to you!
+Happy earthday to dear Liza!
+Happy earthday to you!
+```
+
+NB: If your readable Stream that you're piping through the `replacestream` is
+paused, then you may have to call the `.resume()` method on it.
 
 ### Changing the encoding
 
