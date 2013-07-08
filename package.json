@@ -1,6 +1,6 @@
 {
   "name": "replacestream",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A node.js through stream that does basic streaming text search and replace and is chunk boundary friendly",
   "main": "index.js",
   "scripts": {
