@@ -2,12 +2,14 @@ var through = require('through');
 
 module.exports = ReplaceStream;
 function ReplaceStream(search, replace, options) {
-  var match = permuteMatch(search);
   var tail = '';
   var totalMatches = 0;
   options = options || {};
   options.limit = options.limit || Infinity;
   options.encoding = options.encoding || 'utf8';
+  options.regExpOptions = options.regExpOptions || 'gim';
+  var match = permuteMatch(search, options);
+
 
   function write(buf) {
     var matches, before, after;
@@ -69,7 +71,7 @@ function permute(s) {
   return ret;
 }
 
-function permuteMatch(s) {
+function permuteMatch(s, options) {
   var match =
     permute(s)
       .map(function (permute, i, arr) {
@@ -77,5 +79,5 @@ function permuteMatch(s) {
           ((i < arr.length - 1) ? '$' : '') + ')';
       })
       .join('|');
-  return new RegExp(match, 'gim');
+  return new RegExp(match, options.regExpOptions);
 }
