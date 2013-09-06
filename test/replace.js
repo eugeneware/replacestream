@@ -10,8 +10,34 @@ function script(inner) {
     '</script>'
   ].join('\n');
 }
-
 describe('replace', function () {
+  it('should only replace characters specified', function (done) {
+    var haystack = [
+      'ab',
+      'a',
+      'b'
+    ].join('\n');
+
+    var acc = '';
+    var replace = replaceStream('ab','Z');
+    replace.on('data', function (data) {
+      acc += data;
+    });
+    replace.on('end', function () {
+        var expected = [
+        'Z',
+        'a',
+        'b'
+      ].join('\n');
+
+      expect(acc).to.equal(expected);
+      done();
+    });
+
+    replace.write(haystack);
+    replace.end();
+  });
+
   it('should be able to replace within a chunk', function (done) {
     var haystack = [
       '<!DOCTYPE html>',

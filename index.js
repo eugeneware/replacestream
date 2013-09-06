@@ -29,6 +29,7 @@ function ReplaceStream(search, replace, options) {
         tail = part;
       } else {
         totalMatches++;
+
         rewritten += before + replace;
         tail = '';
       }
@@ -37,8 +38,17 @@ function ReplaceStream(search, replace, options) {
     }
 
     if (matchCount) {
-      after = haystack.slice(lastPos, haystack.length - tail.length);
-      this.queue(rewritten + after);
+      after = haystack.slice(lastPos, haystack.length);
+
+      if(tail.length + after.length < search.length){
+        tail += after;
+      }
+      else{
+        rewritten += tail +after;
+        tail = '';
+      }
+
+      this.queue(rewritten);
     } else if (tail) {
       this.queue(haystack);
       tail = '';
