@@ -297,6 +297,7 @@ describe('replace', function () {
 
       replace.end();
     });
+
  it('should replace characters specified and not modify partial matches', function (done) {
     var haystack = [
       'ab',

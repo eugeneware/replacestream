@@ -10,7 +10,6 @@ function ReplaceStream(search, replace, options) {
   options.regExpOptions = options.regExpOptions || 'gim';
   var match = permuteMatch(search, options);
 
-
   function write(buf) {
     var matches, before, after;
     var haystack = tail + buf.toString(options.encoding);
@@ -25,34 +24,28 @@ function ReplaceStream(search, replace, options) {
       var part = matches[0];
       before = haystack.slice(lastPos, matches.index);
       if (part.length < search.length) {
-
-        if(tail)
+        if (tail) {
           rewritten += tail+before;
-        else
+        } else {
           rewritten += before;
-        
+        }
         tail = part;
       } else {
         totalMatches++;
-
         rewritten += before + replace;
         tail = '';
       }
-
       lastPos = matches.index + part.length;
     }
 
     if (matchCount) {
       after = haystack.slice(lastPos, haystack.length);
-
-      if(tail.length + after.length < search.length){
+      if (tail.length + after.length < search.length) {
         tail += after;
-      }
-      else{
-        rewritten += tail +after;
+      } else {
+        rewritten += tail + after;
         tail = '';
       }
-
       this.queue(rewritten);
     } else if (tail) {
       this.queue(haystack);
