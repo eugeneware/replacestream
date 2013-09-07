@@ -13,6 +13,7 @@ function ReplaceStream(search, replace, options) {
   function write(buf) {
     var matches, before, after;
     var haystack = tail + buf.toString(options.encoding);
+    tail = '';
     var matchCount = 0;
     var lastPos = 0;
     var rewritten = '';
@@ -32,7 +33,13 @@ function ReplaceStream(search, replace, options) {
         tail = part;
       } else {
         totalMatches++;
-        rewritten += before + replace;
+        
+        if (tail) {
+          rewritten += (tail+before +replace);
+        } else {
+          rewritten += before + replace;
+        }
+        
         tail = '';
       }
       lastPos = matches.index + part.length;
