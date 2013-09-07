@@ -12,7 +12,6 @@ function ReplaceStream(search, replace, options) {
   var match = permuteMatch(search, options);
 
   function write(buf) {
-    var before;
     var matches;
     var lastPos = 0;
     var matchCount = 0;
@@ -27,7 +26,7 @@ function ReplaceStream(search, replace, options) {
       matchCount++;
       var before = haystack.slice(lastPos, matches.index);
       var regexMatch = matches[0];
-      var lastPos = matches.index + regexMatch.length;
+      lastPos = matches.index + regexMatch.length;
 
       var dataToAppend = getDataToAppend(before,regexMatch);
       rewritten += dataToAppend;
@@ -36,14 +35,14 @@ function ReplaceStream(search, replace, options) {
     if (matchCount)
       remaining = haystack.slice(lastPos, haystack.length);
     else if(tail)
-      remaining = haystack
+      remaining = haystack;
 
     var dataToQueue = getDataToQueue(matchCount,remaining,rewritten);
     this.queue(dataToQueue);
   }
 
   function getDataToAppend(before, match){
-    var dataToAppend = before
+    var dataToAppend = before;
 
     if(tail)
       dataToAppend = tail + dataToAppend;
@@ -55,7 +54,7 @@ function ReplaceStream(search, replace, options) {
 
     tail = '';
     totalMatches++;
-    dataToAppend += replace    
+    dataToAppend += replace;
 
     return dataToAppend;
   }
