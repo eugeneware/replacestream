@@ -10,6 +10,7 @@ function script(inner) {
     '</script>'
   ].join('\n');
 }
+
 describe('replace', function () {
   it('should be able to replace within a chunk', function (done) {
     var haystack = [
@@ -325,6 +326,7 @@ describe('replace', function () {
     replace.write(haystack);
     replace.end();
   });
+
   it('should handle partial matches between complete matches', function (done) {
     var haystack = [
       "ab",
@@ -354,6 +356,7 @@ describe('replace', function () {
     replace.write(haystack);
     replace.end();
   });
+
   it('should only replace characters specified', function (done) {
     var haystack = [
       'ab',
@@ -380,5 +383,4 @@ describe('replace', function () {
     replace.write(haystack);
     replace.end();
   });
-
 });
