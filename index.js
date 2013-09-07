@@ -8,52 +8,72 @@ function ReplaceStream(search, replace, options) {
   options.limit = options.limit || Infinity;
   options.encoding = options.encoding || 'utf8';
   options.regExpOptions = options.regExpOptions || 'gim';
+
   var match = permuteMatch(search, options);
 
   function write(buf) {
-    var matches, before, after;
-    var haystack = tail + buf.toString(options.encoding);
-    var matchCount = 0;
+    var matches;
     var lastPos = 0;
+    var matchCount = 0;
     var rewritten = '';
+    var remaining = buf;
+    var haystack = tail + buf.toString(options.encoding);
+    tail = '';
 
     while (totalMatches < options.limit &&
-     (matches = match.exec(haystack)) !== null) {
+          (matches = match.exec(haystack)) !== null) {
 
       matchCount++;
-      var part = matches[0];
-      before = haystack.slice(lastPos, matches.index);
-      if (part.length < search.length) {
-        if (tail) {
-          rewritten += tail+before;
-        } else {
-          rewritten += before;
-        }
-        tail = part;
-      } else {
-        totalMatches++;
-        rewritten += before + replace;
-        tail = '';
-      }
-      lastPos = matches.index + part.length;
+      var before = haystack.slice(lastPos, matches.index);
+      var regexMatch = matches[0];
+      lastPos = matches.index + regexMatch.length;
+
+      var dataToAppend = getDataToAppend(before,regexMatch);
+      rewritten += dataToAppend;
     }
 
-    if (matchCount) {
-      after = haystack.slice(lastPos, haystack.length);
-      if (tail.length + after.length < search.length) {
-        tail += after;
-      } else {
-        rewritten += tail + after;
-        tail = '';
-      }
-      this.queue(rewritten);
-    } else if (tail) {
-      this.queue(haystack);
-      tail = '';
-    } else {
-      this.queue(buf);
-      tail = '';
+    if (matchCount)
+      remaining = haystack.slice(lastPos, haystack.length);
+    else if(tail)
+      remaining = haystack;
+
+    var dataToQueue = getDataToQueue(matchCount,remaining,rewritten);
+    this.queue(dataToQueue);
+  }
+
+  function getDataToAppend(before, match){
+    var dataToAppend = before;
+
+    if(tail)
+      dataToAppend = tail + dataToAppend;
+
+    if (match.length < search.length){
+      tail = match;
+      return dataToAppend;
     }
+
+    tail = '';
+    totalMatches++;
+    dataToAppend += replace;
+
+    return dataToAppend;
+  }
+
+  function getDataToQueue(matchCount, remaining, rewritten){
+    var dataToQueue = remaining;
+
+    if (matchCount) {
+
+      if ((tail.length + remaining.length) < search.length) {
+        tail += remaining;
+        return rewritten;
+      } 
+
+      dataToQueue = rewritten +tail + remaining;
+    } 
+
+    tail = '';
+    return dataToQueue;
   }
 
   function end() {
