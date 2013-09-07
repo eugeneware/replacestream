@@ -34,20 +34,20 @@ function ReplaceStream(search, replace, options) {
 
     if (matchCount)
       remaining = haystack.slice(lastPos, haystack.length);
-    else if(tail)
+    else if (tail)
       remaining = haystack;
 
     var dataToQueue = getDataToQueue(matchCount,remaining,rewritten);
     this.queue(dataToQueue);
   }
 
-  function getDataToAppend(before, match){
+  function getDataToAppend(before, match) {
     var dataToAppend = before;
 
-    if(tail)
+    if (tail)
       dataToAppend = tail + dataToAppend;
 
-    if (match.length < search.length){
+    if (match.length < search.length) {
       tail = match;
       return dataToAppend;
     }
@@ -59,7 +59,7 @@ function ReplaceStream(search, replace, options) {
     return dataToAppend;
   }
 
-  function getDataToQueue(matchCount, remaining, rewritten){
+  function getDataToQueue(matchCount, remaining, rewritten) {
     var dataToQueue = remaining;
 
     if (matchCount) {
