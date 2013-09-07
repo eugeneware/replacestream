@@ -11,7 +11,6 @@ function script(inner) {
   ].join('\n');
 }
 describe('replace', function () {
-   
   it('should be able to replace within a chunk', function (done) {
     var haystack = [
       '<!DOCTYPE html>',
