@@ -25,7 +25,12 @@ function ReplaceStream(search, replace, options) {
       var part = matches[0];
       before = haystack.slice(lastPos, matches.index);
       if (part.length < search.length) {
-        rewritten += before;
+
+        if(tail)
+          rewritten += tail+before;
+        else
+          rewritten += before;
+        
         tail = part;
       } else {
         totalMatches++;
