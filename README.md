@@ -40,7 +40,7 @@ fs.createReadStream(path.join(__dirname, 'happybirthday.txt'))
 
 Running this will print out:
 
-```
+``` bash
 $ node simple.js
 Happy earthday to you!
 Happy earthday to you!
@@ -59,7 +59,7 @@ fs.createReadStream(path.join(__dirname, 'happybirthday.txt'))
 
 Which would output:
 
-```
+``` bash
 $ node simple.js
 Happy earthday to you!
 Happy earthday to you!
@@ -70,6 +70,7 @@ Happy birthday to you!
 And you can also pass in a replacement function which will get called for each
 replacement:
 
+``` js
 // Replace all the instances of 'birthday' with 'earthday'
 var words = ['Awesome', 'Good', 'Super', 'Joyous'];
 function replaceFn(match) {
@@ -82,7 +83,7 @@ fs.createReadStream(path.join(__dirname, 'happybirthday.txt'))
 
 Which would output:
 
-```
+``` bash
 $ node simple.js
 Awesome birthday to you!
 Good birthday to you!
