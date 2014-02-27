@@ -383,4 +383,44 @@ describe('replace', function () {
     replace.write(haystack);
     replace.end();
   });
+
+  it('should be able to use a replace function', function (done) {
+    var haystacks = [
+      [ '<!DOCTYPE html>',
+        '<html>',
+        ' <head>',
+        '   <title>Test</title>',
+        ' </he'
+      ].join('\n'),
+      [      'ad>',
+        ' <body>',
+        '   <h1>Head</h1>',
+        ' </body>',
+        '</html>'
+      ].join('\n'),
+    ];
+
+    var acc = '';
+    var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
+
+    function replaceFn(match) {
+      expect(match).to.equal('</head>');
+      return inject + '</head>';
+    }
+
+    var replace = replaceStream('</head>', replaceFn);
+    replace.on('data', function (data) {
+      acc += data;
+    });
+    replace.on('end', function () {
+      expect(acc).to.include(inject);
+      done();
+    });
+
+    haystacks.forEach(function (haystack) {
+      replace.write(haystack);
+    });
+
+    replace.end();
+  });
 });

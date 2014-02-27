@@ -9,6 +9,13 @@ function ReplaceStream(search, replace, options) {
   options.encoding = options.encoding || 'utf8';
   options.regExpOptions = options.regExpOptions || 'gim';
 
+  var replaceFn = replace;
+  if (typeof replace !== 'function') {
+    replaceFn = function () {
+      return replace;
+    };
+  }
+
   var match = permuteMatch(search, options);
 
   function write(buf) {
@@ -54,7 +61,7 @@ function ReplaceStream(search, replace, options) {
 
     tail = '';
     totalMatches++;
-    dataToAppend += replace;
+    dataToAppend += replaceFn(match);
 
     return dataToAppend;
   }
@@ -67,10 +74,10 @@ function ReplaceStream(search, replace, options) {
       if ((tail.length + remaining.length) < search.length) {
         tail += remaining;
         return rewritten;
-      } 
+      }
 
       dataToQueue = rewritten +tail + remaining;
-    } 
+    }
 
     tail = '';
     return dataToQueue;
