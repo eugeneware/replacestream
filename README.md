@@ -71,7 +71,7 @@ And you can also pass in a replacement function which will get called for each
 replacement:
 
 ``` js
-// Replace all the instances of 'birthday' with 'earthday'
+// Replace the word 'Happy' with a different word earch time
 var words = ['Awesome', 'Good', 'Super', 'Joyous'];
 function replaceFn(match) {
   return words.shift();
