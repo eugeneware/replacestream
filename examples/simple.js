@@ -1,4 +1,4 @@
-var replaceStream = require('replacestream')
+var replaceStream = require('..')
   , fs = require('fs')
   , path = require('path');
 
@@ -24,4 +24,19 @@ Happy earthday to you!
 Happy earthday to you!
 Happy birthday to dear Liza!
 Happy birthday to you!
+*/
+
+var words = ['Awesome', 'Good', 'Super', 'Joyous'];
+function replaceFn(match) {
+  return words.shift();
+}
+fs.createReadStream(path.join(__dirname, 'happybirthday.txt'))
+  .pipe(replaceStream('Happy', replaceFn))
+  .pipe(process.stdout);
+
+/*
+Awesome birthday to you!
+Good birthday to you!
+Super birthday to dear Liza!
+Joyous birthday to you!
 */

@@ -67,6 +67,29 @@ Happy birthday to dear Liza!
 Happy birthday to you!
 ```
 
+And you can also pass in a replacement function which will get called for each
+replacement:
+
+// Replace all the instances of 'birthday' with 'earthday'
+var words = ['Awesome', 'Good', 'Super', 'Joyous'];
+function replaceFn(match) {
+  return words.shift();
+}
+fs.createReadStream(path.join(__dirname, 'happybirthday.txt'))
+  .pipe(replaceStream('birthday', replaceFn))
+  .pipe(process.stdout);
+```
+
+Which would output:
+
+```
+$ node simple.js
+Awesome birthday to you!
+Good birthday to you!
+Super birthday to dear Liza!
+Joyous birthday to you!
+```
+
 ### Web server search and replace over a test file
 
 Here's the same example, but kicked off from a HTTP server:

@@ -423,4 +423,63 @@ describe('replace', function () {
 
     replace.end();
   });
+
+  it('should be able to change each replacement value with a function',
+    function (done) {
+      var haystacks = [
+        [ '<!DOCTYPE html>',
+          '<html>',
+          ' <head>',
+          '   <title>Test</title>',
+          ' </head>',
+          ' <body>',
+          ' <p> Hello 1</p>',
+          ' <p> Hello 2</'
+        ].join('\n'),
+        [               'p>',
+          ' <p> Hello 3</p>',
+          ' <p> Hello 4</p>',
+          ' <p> Hello 5</p>',
+          ' </body>',
+          '</html>'
+        ].join('\n'),
+      ];
+
+      var acc = '';
+
+      var greetings = ['Hi', 'Hey', 'Gday', 'Bonjour', 'Greetings'];
+      function replaceFn(match) {
+        return greetings.shift();
+      }
+
+      var replace = replaceStream('Hello', replaceFn);
+      replace.on('data', function (data) {
+        acc += data;
+      });
+      replace.on('end', function () {
+        var expected = [
+          '<!DOCTYPE html>',
+          '<html>',
+          ' <head>',
+          '   <title>Test</title>',
+          ' </head>',
+          ' <body>',
+          ' <p> Hi 1</p>',
+          ' <p> Hey 2</p>',
+          ' <p> Gday 3</p>',
+          ' <p> Bonjour 4</p>',
+          ' <p> Greetings 5</p>',
+          ' </body>',
+          '</html>'
+        ].join('\n');
+        expect(acc).to.equal(expected);
+        done();
+      });
+
+      haystacks.forEach(function (haystack) {
+        replace.write(haystack);
+      });
+
+      replace.end();
+    });
 });
