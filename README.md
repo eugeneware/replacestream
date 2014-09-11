@@ -77,7 +77,7 @@ function replaceFn(match) {
   return words.shift();
 }
 fs.createReadStream(path.join(__dirname, 'happybirthday.txt'))
-  .pipe(replaceStream('birthday', replaceFn))
+  .pipe(replaceStream('Happy', replaceFn))
   .pipe(process.stdout);
 ```
 
