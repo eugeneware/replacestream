@@ -22,8 +22,8 @@
   "author": "Eugene Ware <eugene@noblesamurai.com>",
   "license": "BSD",
   "devDependencies": {
-    "chai": "~1.6.1",
-    "mocha": "~1.11.0"
+    "chai": "^1.9.1",
+    "mocha": "^1.21.4"
   },
   "dependencies": {
     "through": "~2.3.4"
