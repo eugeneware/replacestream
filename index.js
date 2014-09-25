@@ -8,15 +8,21 @@ function ReplaceStream(search, replace, options) {
   options.limit = options.limit || Infinity;
   options.encoding = options.encoding || 'utf8';
   options.regExpOptions = options.regExpOptions || 'gim';
+  options.max_match_len = options.max_match_len || 1000;
 
   var replaceFn = replace;
   if (typeof replace !== 'function') {
-    replaceFn = function () {
-      return replace;
+    replaceFn = function (match) {
+      var newReplace = replace;
+      // ability to us $1 with captures
+      match.forEach(function(m, index) {
+        newReplace = newReplace.replace('$' + index, m || '')
+      });
+      return newReplace;
     };
   }
 
-  var match = permuteMatch(search, options);
+  var match = search instanceof RegExp ? new RegExp(search.source, options.regExpOptions) : permuteMatch(search, options);
 
   function write(buf) {
     var matches;
@@ -25,15 +31,21 @@ function ReplaceStream(search, replace, options) {
     var rewritten = '';
     var remaining = buf;
     var haystack = tail + buf.toString(options.encoding);
+    var movingWindow = '';
     tail = '';
 
+    movingWindow = movingWindow + haystack;
+    if (movingWindow > options.max_match_len * 2) {
+      movingWindow = movingWindow.slice(movingWindow.length - options.max_match_len - 1);
+    }
+
     while (totalMatches < options.limit &&
-          (matches = match.exec(haystack)) !== null) {
+          (matches = match.exec(movingWindow)) !== null) {
 
       matchCount++;
       var before = haystack.slice(lastPos, matches.index);
-      var regexMatch = matches[0];
-      lastPos = matches.index + regexMatch.length;
+      var regexMatch = matches;
+      lastPos = matches.index + regexMatch[0].length;
 
       var dataToAppend = getDataToAppend(before,regexMatch);
       rewritten += dataToAppend;
@@ -54,8 +66,8 @@ function ReplaceStream(search, replace, options) {
     if (tail)
       dataToAppend = tail + dataToAppend;
 
-    if (match.length < search.length) {
-      tail = match;
+    if (!search instanceof RegExp && match[0].length < search.length) {
+      tail = match[0];
       return dataToAppend;
     }
 
