@@ -11,7 +11,7 @@ function ReplaceStream(search, replace, options) {
   options.max_match_len = options.max_match_len || 1000;
 
   var replaceFn = replace;
-  if (typeof replace !== 'function') {
+  if (typeof replace !== 'function' && isRegex) {
     replaceFn = function (match) {
       var newReplace = replace;
       // ability to us $1 with captures
@@ -21,8 +21,14 @@ function ReplaceStream(search, replace, options) {
       return newReplace;
     };
   }
+  if (typeof replace !== 'function') {
+    replaceFn = function () {
+      return replace;
+    };
+  }
 
-  var match = search instanceof RegExp ? new RegExp(search.source, options.regExpOptions) : permuteMatch(search, options);
+  var isRegex = search instanceof RegExp;
+  var match = isRegex ? new RegExp(search.source, options.regExpOptions) : permuteMatch(search, options);
 
   function write(buf) {
     var matches;
@@ -66,14 +72,15 @@ function ReplaceStream(search, replace, options) {
     if (tail)
       dataToAppend = tail + dataToAppend;
 
-    if (!search instanceof RegExp && match[0].length < search.length) {
+    if (!(search instanceof RegExp) && match[0].length < search.length) {
       tail = match[0];
       return dataToAppend;
     }
 
     tail = '';
     totalMatches++;
-    dataToAppend += replaceFn(match);
+
+    dataToAppend += isRegex ? replaceFn(match) : replaceFn(match[0]);
 
     return dataToAppend;
   }
