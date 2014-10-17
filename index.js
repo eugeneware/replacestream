@@ -11,6 +11,8 @@ function ReplaceStream(search, replace, options) {
   options.max_match_len = options.max_match_len || 1000;
 
   var replaceFn = replace;
+  var isRegex = search instanceof RegExp;
+
   if (typeof replace !== 'function' && isRegex) {
     replaceFn = function (match) {
       var newReplace = replace;
@@ -27,40 +29,42 @@ function ReplaceStream(search, replace, options) {
     };
   }
 
-  var isRegex = search instanceof RegExp;
   var match = isRegex ? new RegExp(search.source, options.regExpOptions) : permuteMatch(search, options);
 
   function write(buf) {
     var matches;
     var lastPos = 0;
+    var runningMatch = '';
     var matchCount = 0;
     var rewritten = '';
-    var remaining = buf;
+    var remaining = '';
     var haystack = tail + buf.toString(options.encoding);
-    var movingWindow = '';
     tail = '';
 
-    movingWindow = movingWindow + haystack;
-    if (movingWindow > options.max_match_len * 2) {
-      movingWindow = movingWindow.slice(movingWindow.length - options.max_match_len - 1);
-    }
-
     while (totalMatches < options.limit &&
-          (matches = match.exec(movingWindow)) !== null) {
+          (matches = match.exec(haystack)) !== null) {
 
       matchCount++;
       var before = haystack.slice(lastPos, matches.index);
       var regexMatch = matches;
       lastPos = matches.index + regexMatch[0].length;
 
-      var dataToAppend = getDataToAppend(before,regexMatch);
-      rewritten += dataToAppend;
+      if (lastPos == haystack.length && regexMatch[0].length < options.max_match_len) {
+        runningMatch = regexMatch[0]
+      } else {
+        var dataToAppend = getDataToAppend(before,regexMatch);
+        rewritten += dataToAppend;
+      }
     }
 
-    if (matchCount)
+    if (runningMatch.length > 0)
+      remaining = runningMatch
+    else if (matchCount)
       remaining = haystack.slice(lastPos, haystack.length);
     else if (tail)
       remaining = haystack;
+    else
+      remaining = haystack.slice(0 - options.max_match_len)
 
     var dataToQueue = getDataToQueue(matchCount,remaining,rewritten);
     this.queue(dataToQueue);
@@ -95,10 +99,10 @@ function ReplaceStream(search, replace, options) {
         return rewritten;
       }
 
-      dataToQueue = rewritten +tail + remaining;
+      dataToQueue = rewritten + tail;
     }
 
-    tail = '';
+    tail = remaining;
     return dataToQueue;
   }
 
@@ -126,12 +130,5 @@ function permute(s) {
 }
 
 function permuteMatch(s, options) {
-  var match =
-    permute(s)
-      .map(function (permute, i, arr) {
-        return '(' + escapeRegExp(permute) +
-          ((i < arr.length - 1) ? '$' : '') + ')';
-      })
-      .join('|');
-  return new RegExp(match, options.regExpOptions);
+  return new RegExp(s, options.regExpOptions);
 }
