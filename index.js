@@ -8,7 +8,7 @@ function ReplaceStream(search, replace, options) {
   options.limit = options.limit || Infinity;
   options.encoding = options.encoding || 'utf8';
   options.regExpOptions = options.regExpOptions || 'gim';
-  options.max_match_len = options.max_match_len || 1000;
+  options.max_match_len = options.max_match_len || 10;
 
   var replaceFn = replace;
   var isRegex = search instanceof RegExp;
@@ -37,7 +37,7 @@ function ReplaceStream(search, replace, options) {
     var runningMatch = '';
     var matchCount = 0;
     var rewritten = '';
-    var remaining = '';
+    var remaining = buf;
     var haystack = tail + buf.toString(options.encoding);
     tail = '';
 
@@ -50,38 +50,35 @@ function ReplaceStream(search, replace, options) {
       lastPos = matches.index + regexMatch[0].length;
 
       if (lastPos == haystack.length && regexMatch[0].length < options.max_match_len) {
-        runningMatch = regexMatch[0]
+        tail = regexMatch[0]
       } else {
         var dataToAppend = getDataToAppend(before,regexMatch);
         rewritten += dataToAppend;
       }
     }
 
-    if (runningMatch.length > 0)
-      remaining = runningMatch
-    else if (matchCount)
-      remaining = haystack.slice(lastPos, haystack.length);
-    else if (tail)
-      remaining = haystack;
-    else
-      remaining = haystack.slice(0 - options.max_match_len)
+    if (!tail) {
+      tail = haystack.slice(lastPos) > options.max_match_len ? haystack.slice(lastPos).slice(0 - options.max_match_len) : haystack.slice(lastPos)
+    }
 
-    var dataToQueue = getDataToQueue(matchCount,remaining,rewritten);
-    this.queue(dataToQueue);
+    if (matchCount > 0) {
+      if (haystack.length > tail.length) {
+        remaining = rewritten + haystack.slice(lastPos, haystack.length - tail.length)
+      } else {
+        tail = haystack.slice(lastPos)
+        remaining = rewritten
+      }
+    } else {
+      remaining = haystack.slice(0, haystack.length - tail.length)
+    }
+
+    //var dataToQueue = getDataToQueue(matchCount,remaining,rewritten);
+    this.queue(remaining);
   }
 
   function getDataToAppend(before, match) {
     var dataToAppend = before;
 
-    if (tail)
-      dataToAppend = tail + dataToAppend;
-
-    if (!(search instanceof RegExp) && match[0].length < search.length) {
-      tail = match[0];
-      return dataToAppend;
-    }
-
-    tail = '';
     totalMatches++;
 
     dataToAppend += isRegex ? replaceFn(match) : replaceFn(match[0]);
