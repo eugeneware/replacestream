@@ -516,24 +516,23 @@ describe('replace', function () {
           '<html>',
           ' <head>',
           '   <title>Test</title>',
-          ' </he'
-        ].join('\n'),
-        [      'ad>',
+          ' </head>',
           ' <body>',
-          '   <h1>Head</h1>',
+          '   <h1>I love feeeee'
+        ].join('\n'),
+        [      'eeeeeeeeeed</h1>',
           ' </body>',
           '</html>'
         ].join('\n'),
       ];
 
       var acc = '';
-      var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
-      var replace = replaceStream(/<\/head>/, inject + '</head>');
+      var replace = replaceStream(/fe+d/, 'foooooooood');
       replace.on('data', function (data) {
         acc += data;
       });
       replace.on('end', function () {
-        expect(acc).to.include(inject);
+        expect(acc).to.include('foooooooood');
         done();
       });
 
