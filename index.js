@@ -37,7 +37,6 @@ function ReplaceStream(search, replace, options) {
     var runningMatch = '';
     var matchCount = 0;
     var rewritten = '';
-    var remaining = buf;
     var haystack = tail + buf.toString(options.encoding);
     tail = '';
 
@@ -57,22 +56,10 @@ function ReplaceStream(search, replace, options) {
       }
     }
 
-    if (!tail) {
+    if (tail.length < 1)
       tail = haystack.slice(lastPos) > options.max_match_len ? haystack.slice(lastPos).slice(0 - options.max_match_len) : haystack.slice(lastPos)
-    }
 
-    if (matchCount > 0) {
-      if (haystack.length > tail.length) {
-        remaining = rewritten + haystack.slice(lastPos, haystack.length - tail.length)
-      } else {
-        tail = haystack.slice(lastPos)
-        remaining = rewritten
-      }
-    } else {
-      remaining = haystack.slice(0, haystack.length - tail.length)
-    }
-
-    //var dataToQueue = getDataToQueue(matchCount,remaining,rewritten);
+    var dataToQueue = getDataToQueue(matchCount,haystack,rewritten,lastPos);
     this.queue(remaining);
   }
 
@@ -86,20 +73,19 @@ function ReplaceStream(search, replace, options) {
     return dataToAppend;
   }
 
-  function getDataToQueue(matchCount, remaining, rewritten) {
-    var dataToQueue = remaining;
+  function getDataToQueue(matchCount, haystack, rewritten, lastPos) {
+    var dataToQueue;
 
-    if (matchCount) {
-
-      if ((tail.length + remaining.length) < search.length) {
-        tail += remaining;
-        return rewritten;
+    if (matchCount > 0) {
+      if (haystack.length > tail.length) {
+        remaining = rewritten + haystack.slice(lastPos, haystack.length - tail.length)
+      } else {
+        remaining = rewritten
       }
-
-      dataToQueue = rewritten + tail;
+    } else {
+      remaining = haystack.slice(0, haystack.length - tail.length)
     }
 
-    tail = remaining;
     return dataToQueue;
   }
 
