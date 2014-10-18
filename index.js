@@ -29,7 +29,7 @@ function ReplaceStream(search, replace, options) {
     };
   }
 
-  var match = isRegex ? new RegExp(search.source, options.regExpOptions) : permuteMatch(search, options);
+  var match = isRegex ? matchFromRegex(search, options) : matchFromString(search, options);
 
   function write(buf) {
     var matches;
@@ -112,6 +112,15 @@ function permute(s) {
   return ret;
 }
 
-function permuteMatch(s, options) {
+function matchFromRegex(s, options) {
+  if (options.regExpOptions) {
+    return new RegExp(s.source, options.regExpOptions)
+  } else {
+    var flags = s.toString().replace(/\/[^\/]\//, '')
+    return new RegExp(s.source, flags)
+  }
+}
+
+function matchFromString(s, options) {
   return new RegExp(s, options.regExpOptions);
 }
