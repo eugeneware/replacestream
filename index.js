@@ -66,7 +66,7 @@ function ReplaceStream(search, replace, options) {
       tail = haystack.slice(lastPos) > options.max_match_len ? haystack.slice(lastPos).slice(0 - options.max_match_len) : haystack.slice(lastPos)
 
     var dataToQueue = getDataToQueue(matchCount,haystack,rewritten,lastPos);
-    this.queue(remaining);
+    this.queue(dataToQueue);
   }
 
   function getDataToAppend(before, match) {
@@ -84,12 +84,12 @@ function ReplaceStream(search, replace, options) {
 
     if (matchCount > 0) {
       if (haystack.length > tail.length) {
-        remaining = rewritten + haystack.slice(lastPos, haystack.length - tail.length)
+        dataToQueue = rewritten + haystack.slice(lastPos, haystack.length - tail.length)
       } else {
-        remaining = rewritten
+        dataToQueue = rewritten
       }
     } else {
-      remaining = haystack.slice(0, haystack.length - tail.length)
+      dataToQueue = haystack.slice(0, haystack.length - tail.length)
     }
 
     return dataToQueue;
