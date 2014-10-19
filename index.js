@@ -8,7 +8,7 @@ function ReplaceStream(search, replace, options) {
   options.limit = options.limit || Infinity;
   options.encoding = options.encoding || 'utf8';
   options.regExpOptions = options.regExpOptions || 'gim';
-  options.max_match_len = options.max_match_len || 10;
+  options.max_match_len = options.max_match_len || 100;
 
   var replaceFn = replace;
   var isRegex = search instanceof RegExp;
@@ -29,7 +29,13 @@ function ReplaceStream(search, replace, options) {
     };
   }
 
-  var match = isRegex ? matchFromRegex(search, options) : matchFromString(search, options);
+  var match;
+  if (isRegex) {
+    match = matchFromRegex(search, options)
+  } else {
+    match = matchFromString(search, options);
+    options.max_match_len = search.length;
+  }
 
   function write(buf) {
     var matches;
