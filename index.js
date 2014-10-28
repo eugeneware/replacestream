@@ -108,16 +108,6 @@ function escapeRegExp(s) {
     return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 }
 
-function permute(s) {
-  var ret = [];
-  var acc = '';
-  for (var i = 0, len = s.length; i < len; i++) {
-    acc += s[i];
-    ret.push(acc);
-  }
-  return ret;
-}
-
 function matchFromRegex(s, options) {
   if (options.regExpOptions) {
     return new RegExp(s.source, options.regExpOptions)
@@ -128,5 +118,5 @@ function matchFromRegex(s, options) {
 }
 
 function matchFromString(s, options) {
-  return new RegExp(s, options.regExpOptions);
+  return new RegExp(escapeRegExp(s), options.regExpOptions);
 }
