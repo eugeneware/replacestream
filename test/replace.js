@@ -951,4 +951,34 @@ describe('replace', function () {
 
         replace.end();
       });
+
+      it('should be able to replace captures using $1 notation', function (done) {
+        var haystack = [
+          "ab",
+          'a',
+          'ab',
+          'b'
+        ].join('\n');
+
+        var acc = '';
+        var replace = replaceStream(/(a)(b)/g,'this is $1 and this is $2');
+
+        replace.on('data', function (data) {
+          acc += data;
+        });
+        replace.on('end', function () {
+            var expected = [
+            'this is a and this is b',
+            'a',
+            'this is a and this is b',
+            'b'
+          ].join('\n');
+
+          expect(acc).to.equal(expected);
+          done();
+        });
+
+        replace.write(haystack);
+        replace.end();
+      })
 });
