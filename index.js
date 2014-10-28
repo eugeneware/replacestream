@@ -4,14 +4,17 @@ module.exports = ReplaceStream;
 function ReplaceStream(search, replace, options) {
   var tail = '';
   var totalMatches = 0;
+  var isRegex = search instanceof RegExp;
+
   options = options || {};
   options.limit = options.limit || Infinity;
   options.encoding = options.encoding || 'utf8';
-  options.regExpOptions = options.regExpOptions || 'gim';
   options.max_match_len = options.max_match_len || 100;
 
+  if (!isRegex)
+    options.regExpOptions = options.regExpOptions || 'gmi';
+
   var replaceFn = replace;
-  var isRegex = search instanceof RegExp;
 
   if (typeof replace !== 'function' && isRegex) {
     replaceFn = function (match) {
