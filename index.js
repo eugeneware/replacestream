@@ -16,21 +16,7 @@ function ReplaceStream(search, replace, options) {
 
   var replaceFn = replace;
 
-  if (typeof replace !== 'function' && isRegex) {
-    replaceFn = function (match) {
-      var newReplace = replace;
-      // ability to us $1 with captures
-      match.forEach(function(m, index) {
-        newReplace = newReplace.replace('$' + index, m || '')
-      });
-      return newReplace;
-    };
-  }
-  if (typeof replace !== 'function') {
-    replaceFn = function () {
-      return replace;
-    };
-  }
+  replaceFn = createReplaceFn(replace, isRegex);
 
   var match;
   if (isRegex) {
@@ -105,6 +91,31 @@ function ReplaceStream(search, replace, options) {
 
   var t = through(write, end);
   return t;
+}
+
+function createReplaceFn(replace, isRegEx) {
+  var regexReplaceFunction = function (match) {
+    var newReplace = replace;
+    // ability to us $1 with captures
+    match.forEach(function(m, index) {
+      newReplace = newReplace.replace('$' + index, m || '')
+    });
+    return newReplace;
+  };
+
+  var stringReplaceFunction = function () {
+    return replace;
+  };
+
+  if (isRegEx && !(replace instanceof Function)) {
+    return regexReplaceFunction;
+  }
+
+  if (!(replace instanceof Function)) {
+    return stringReplaceFunction
+  }
+
+  return replace
 }
 
 function escapeRegExp(s) {
