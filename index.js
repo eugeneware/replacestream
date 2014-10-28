@@ -115,7 +115,11 @@ function matchFromRegex(s, options) {
   if (options.regExpOptions) {
     return new RegExp(s.source, options.regExpOptions)
   } else {
-    var flags = s.toString().replace(/\/[^\/]\//, '')
+    var flags = s.toString().replace(/\/[^\/].*\//, '')
+    // If there is no global flag then there can only be one match
+    if (flags.indexOf('g') < 0) {
+      options.limit = 1;
+    }
     return new RegExp(s.source, flags)
   }
 }
