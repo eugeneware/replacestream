@@ -628,7 +628,7 @@ describe('replace', function () {
 
         var acc = '';
         var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
-        var replace = replaceStream(/<\/p>/, ', world</p>');
+        var replace = replaceStream(/<\/p>/g, ', world</p>');
         replace.on('data', function (data) {
           acc += data;
         });
@@ -682,7 +682,7 @@ describe('replace', function () {
 
         var acc = '';
         var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
-        var replace = replaceStream(/<\/p>/, ', world</p>', { limit: 3 });
+        var replace = replaceStream(/<\/p>/g, ', world</p>', { limit: 3 });
         replace.on('data', function (data) {
           acc += data;
         });
@@ -796,7 +796,7 @@ describe('replace', function () {
       replace.end();
     });
 
-    it('should handle partial matches between complete matches', function (done) {
+    it('should handle partial matches between complete matches using regex', function (done) {
       var haystack = [
         "ab",
         'a',
@@ -805,7 +805,7 @@ describe('replace', function () {
       ].join('\n');
 
       var acc = '';
-      var replace = replaceStream(/ab/,'Z');
+      var replace = replaceStream(/ab/g,'Z');
 
       replace.on('data', function (data) {
         acc += data;
@@ -921,7 +921,7 @@ describe('replace', function () {
           return greetings.shift();
         }
 
-        var replace = replaceStream(/Hello/, replaceFn);
+        var replace = replaceStream(/Hello/g, replaceFn);
         replace.on('data', function (data) {
           acc += data;
         });
