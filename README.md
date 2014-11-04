@@ -91,6 +91,91 @@ Super birthday to dear Liza!
 Joyous birthday to you!
 ```
 
+### Search and replace with Regular Expressions
+
+Here's the same example, but with RegEx:
+
+```
+// happybirthday.txt
+Happy birthday to you!
+Happy birthday to you!
+Happy birthday to dear Liza!
+Happy birthday to you!
+```
+
+``` js
+var replaceStream = require('replacestream')
+  , fs = require('fs')
+  , path = require('path');
+
+// Replace any word that has an 'o' with 'oh'
+fs.createReadStream(path.join(__dirname, 'happybirthday.txt'))
+  .pipe(replaceStream(/\w*o\w*/g, 'oh'))
+  .pipe(process.stdout);
+```
+
+Running this will print out:
+
+``` bash
+$ node simple.js
+Happy birthday oh oh!
+Happy birthday oh oh!
+Happy birthday oh dear Liza!
+Happy birthday oh oh!
+```
+
+You can also insert captures using the $1 ($index) notation. This is similar the built in method [replace](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace#Specifying_a_string_as_a_parameter).
+
+```
+// happybirthday.txt
+Happy birthday to you!
+Happy birthday to you!
+Happy birthday to dear Liza!
+Happy birthday to you!
+```
+
+``` js
+var replaceStream = require('replacestream')
+  , fs = require('fs')
+  , path = require('path');
+
+// Replace any word that has an 'o' with 'oh'
+fs.createReadStream(path.join(__dirname, 'happybirthday.txt'))
+  .pipe(replaceStream(/(dear) (Liza!)/, 'my very good and $1 friend $2'))
+  .pipe(process.stdout);
+```
+
+Running this will print:
+
+``` bash
+$ node simple.js
+Happy birthday to you!
+Happy birthday to you!
+Happy birthday to my very good and dear friend Liza!
+Happy birthday to you!
+```
+
+You can also pass in a replacement function. The function will be passed the the match array as returned by the built-in method [exec](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec):
+
+``` js
+function replaceFn(match) {
+  return match[2] + ' to ' + match[1]
+}
+fs.createReadStream(path.join(__dirname, 'happybirthday.txt'))
+  .pipe(replaceStream(/(birt\w*)\sto\s(you)/g, replaceFn))
+  .pipe(process.stdout);
+```
+
+Which would output:
+
+``` bash
+$ node simple.js
+Happy you to birthday!
+Happy you to birthday!
+Happy birthday to dear Liza!
+Happy you to birthday!
+```
+
 ### Web server search and replace over a test file
 
 Here's the same example, but kicked off from a HTTP server:
