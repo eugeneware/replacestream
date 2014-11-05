@@ -147,3 +147,22 @@ fs.createReadStream(path.join(__dirname, 'happybirthday.txt'))
 ```
 
 By default the encoding will be set to 'utf8'.
+
+## Contributing
+
+replacestream is an **OPEN Open Source Project**. This means that:
+
+> Individuals making significant and valuable contributions are given commit-access to the project to contribute as they see fit. This project is more like an open wiki than a standard guarded open source project.
+
+See the [CONTRIBUTING.md](https://github.com/eugeneware/replacestream/blob/master/CONTRIBUTING.md) file for more details.
+
+### Contributors
+
+replacestream is only possible due to the excellent work of the following contributors:
+
+<table><tbody>
+<tr><th align="left">Eugene Ware</th><td><a href="https://github.com/eugeneware">GitHub/eugeneware</a></td></tr>
+<tr><th align="left">Ryan Mehta</th><td><a href="https://github.com/mehtaphysical">GitHub/mehtaphysical</a></td></tr>
+<tr><th align="left">Tim Chaplin</th><td><a href="https://github.com/tjchaplin">GitHub/tjchaplin</a></td></tr>
+<tr><th align="left">Romain</th><td><a href="https://github.com/Filirom1">GitHub/Filirom1</a></td></tr>
+</tbody></table>
