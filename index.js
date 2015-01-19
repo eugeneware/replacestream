@@ -63,7 +63,7 @@ function ReplaceStream(search, replace, options) {
 
     totalMatches++;
 
-    dataToAppend += isRegex ? replaceFn(match) : replaceFn(match[0]);
+    dataToAppend += isRegex ? replaceFn.apply(this, match.concat([match.index, match.input])) : replaceFn(match[0]);
 
     return dataToAppend;
   }
@@ -94,12 +94,15 @@ function ReplaceStream(search, replace, options) {
 }
 
 function createReplaceFn(replace, isRegEx) {
-  var regexReplaceFunction = function (match) {
+  var regexReplaceFunction = function () {
     var newReplace = replace;
     // ability to us $1 with captures
-    match.forEach(function(m, index) {
-      newReplace = newReplace.replace('$' + index, m || '')
-    });
+    // Start at 1 and end at length - 2 to avoid the match parameter and offset
+    // And string parameters
+    var paramLength = arguments.length - 2;
+    for (var i = 1; i < paramLength; i++) {
+      newReplace = newReplace.replace('$' + i, arguments[i] || '')
+    }
     return newReplace;
   };
 

@@ -872,12 +872,15 @@ describe('replace', function () {
       var acc = '';
       var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
 
-      function replaceFn(match) {
-        expect(match[0]).to.equal('</head>');
+      function replaceFn(match, p1, offset, string) {
+        expect(match).to.equal('</head>');
+        expect(p1).to.equal('head');
+        expect(offset).to.equal(55);
+        expect(string).to.equal(haystacks.join(''));
         return inject + '</head>';
       }
 
-      var replace = replaceStream(/<\/head>/, replaceFn);
+      var replace = replaceStream(/<\/(head)>/, replaceFn);
       replace.on('data', function (data) {
         acc += data;
       });
