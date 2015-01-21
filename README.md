@@ -155,11 +155,11 @@ Happy birthday to my very good and dear friend Liza!
 Happy birthday to you!
 ```
 
-You can also pass in a replacement function. The function will be passed the the match array as returned by the built-in method [exec](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/RegExp/exec):
+You can also pass in a replacement function. The function will be passed parameters just like [String.prototype.replace](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/replace) (e.g. replaceFunction(match, p1, p2, offset, string)). In this case the matched string is limited to the buffer the match is found on, not the entire stream.
 
 ``` js
-function replaceFn(match) {
-  return match[2] + ' to ' + match[1]
+function replaceFn() {
+  return arguments[2] + ' to ' + arguments[1]
 }
 fs.createReadStream(path.join(__dirname, 'happybirthday.txt'))
   .pipe(replaceStream(/(birt\w*)\sto\s(you)/g, replaceFn))
