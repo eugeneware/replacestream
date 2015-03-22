@@ -139,5 +139,9 @@ function matchFromRegex(s, options) {
 }
 
 function matchFromString(s, options) {
+  // If there is no global flag then there can only be one match
+  if (options.regExpOptions.indexOf('g') < 0) {
+    options.limit = 1;
+  }
   return new RegExp(escapeRegExp(s), options.regExpOptions);
 }
