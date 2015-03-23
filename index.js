@@ -3,6 +3,7 @@ var through = require('through');
 module.exports = ReplaceStream;
 function ReplaceStream(search, replace, options) {
   var tail = '';
+  var processedTail = '';
   var totalMatches = 0;
   var isRegex = search instanceof RegExp;
 
@@ -34,6 +35,12 @@ function ReplaceStream(search, replace, options) {
     var rewritten = '';
     var haystack = tail + buf.toString(options.encoding);
     tail = '';
+    // If we have a value for processedTail we've incremented totalMatches, but
+    // if we've got a new chunk, then processedTail won't be used so undo the
+    // totalMatches increment
+    if(processedTail)
+      totalMatches--;
+    processedTail = '';
 
     while (totalMatches < options.limit &&
           (matches = match.exec(haystack)) !== null) {
@@ -45,6 +52,7 @@ function ReplaceStream(search, replace, options) {
 
       if (lastPos == haystack.length && regexMatch[0].length < options.max_match_len) {
         tail = regexMatch[0]
+        processedTail = getDataToAppend(before,regexMatch)
       } else {
         var dataToAppend = getDataToAppend(before,regexMatch);
         rewritten += dataToAppend;
@@ -85,7 +93,8 @@ function ReplaceStream(search, replace, options) {
   }
 
   function end() {
-    if (tail) this.queue(tail);
+    if (processedTail) this.queue(processedTail);
+    else if (tail) this.queue(tail);
     this.queue(null);
   }
 

@@ -984,4 +984,61 @@ describe('replace', function () {
         replace.write(haystack);
         replace.end();
       })
+    it('should be able to replace when the match is a tail using a regex', function (done) {
+      var haystack = [
+        '<!DOCTYPE html>',
+        '<html>',
+        ' <head>',
+        '   <title>Test</title>',
+        ' </head>',
+        ' <body>',
+        '   <h1>Head</h1>',
+        ' </body>',
+        '</html>'
+      ].join('\n');
+
+      var acc = '';
+      var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
+      var replace = replaceStream(/<\/html>/, inject + '</html>');
+      replace.on('data', function (data) {
+        acc += data;
+      });
+      replace.on('end', function () {
+        expect(acc).to.include(inject);
+        done();
+      });
+
+      replace.write(haystack);
+      replace.end();
+    });
+    it('should be correctly limit replacements when the match is a tail using a regex', function (done) {
+      var haystacks = [
+        'a',
+        'a',
+        'b',
+        'a'
+      ]
+
+      var acc = '';
+      var replace = replaceStream(/a/ig, 'c', { limit: 2 })
+      replace.on('data', function (data) {
+        acc += data;
+      });
+      replace.on('end', function () {
+        var expected = [
+          'c',
+          'c',
+          'b',
+          'a'
+        ].join('');
+
+        expect(acc).to.equal(expected);
+        done();
+      });
+
+      haystacks.forEach(function (haystack) {
+        replace.write(haystack);
+      });
+      replace.end();
+    });
 });
