@@ -35,6 +35,11 @@ function ReplaceStream(search, replace, options) {
     var rewritten = '';
     var haystack = tail + buf.toString(options.encoding);
     tail = '';
+    // If we have a value for processedTail we've incremented totalMatches, but
+    // if we've got a new chunk, then processedTail won't be used so undo the
+    // totalMatches increment
+    if(processedTail)
+      totalMatches--;
     processedTail = '';
 
     while (totalMatches < options.limit &&

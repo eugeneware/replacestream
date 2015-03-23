@@ -1011,4 +1011,34 @@ describe('replace', function () {
       replace.write(haystack);
       replace.end();
     });
+    it('should be correctly limit replacements when the match is a tail using a regex', function (done) {
+      var haystacks = [
+        'a',
+        'a',
+        'b',
+        'a'
+      ]
+
+      var acc = '';
+      var replace = replaceStream(/a/ig, 'c', { limit: 2 })
+      replace.on('data', function (data) {
+        acc += data;
+      });
+      replace.on('end', function () {
+        var expected = [
+          'c',
+          'c',
+          'b',
+          'a'
+        ].join('');
+
+        expect(acc).to.equal(expected);
+        done();
+      });
+
+      haystacks.forEach(function (haystack) {
+        replace.write(haystack);
+      });
+      replace.end();
+    });
 });
