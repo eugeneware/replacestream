@@ -999,7 +999,7 @@ describe('replace', function () {
 
       var acc = '';
       var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
-      var replace = replaceStream(/<\/html>/g, inject + '</html>');
+      var replace = replaceStream(/<\/html>/, inject + '</html>');
       replace.on('data', function (data) {
         acc += data;
       });
