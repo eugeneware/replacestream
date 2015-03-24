@@ -43,7 +43,7 @@ function ReplaceStream(search, replace, options) {
       var regexMatch = matches;
       lastPos = matches.index + regexMatch[0].length;
 
-      if (lastPos == haystack.length && regexMatch[0].length < options.max_match_len) {
+      if (lastPos > haystack.length && regexMatch[0].length < options.max_match_len) {
         tail = regexMatch[0]
       } else {
         var dataToAppend = getDataToAppend(before,regexMatch);
