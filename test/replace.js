@@ -74,6 +74,62 @@ describe('replace', function () {
     replace.end();
   });
 
+  it('should default to case insensitive string matches', function (done) {
+    var haystack = [
+      '<!DOCTYPE html>',
+      '<html>',
+      ' <head>',
+      '   <title>Test</title>',
+      ' </head>',
+      ' <body>',
+      '   <h1>Head</h1>',
+      ' </body>',
+      '</html>'
+    ].join('\n');
+
+    var acc = '';
+    var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
+    var replace = replaceStream('</HEAD>', inject + '</head>');
+    replace.on('data', function (data) {
+      acc += data;
+    });
+    replace.on('end', function () {
+      expect(acc).to.include(inject);
+      done();
+    });
+
+    replace.write(haystack);
+    replace.end();
+  });
+
+  it('should be possible to force case sensitive string matches', function (done) {
+    var haystack = [
+      '<!DOCTYPE html>',
+      '<html>',
+      ' <head>',
+      '   <title>Test</title>',
+      ' </head>',
+      ' <body>',
+      '   <h1>Head</h1>',
+      ' </body>',
+      '</html>'
+    ].join('\n');
+
+    var acc = '';
+    var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
+    var replace = replaceStream('</HEAD>', inject + '</head>', { ignoreCase: false });
+    replace.on('data', function (data) {
+      acc += data;
+    });
+    replace.on('end', function () {
+      expect(acc).to.not.include(inject);
+      done();
+    });
+
+    replace.write(haystack);
+    replace.end();
+  });
+
   it('should be able to handle no matches', function (done) {
     var haystacks = [
       [ '<!DOCTYPE html>',
@@ -228,60 +284,6 @@ describe('replace', function () {
           ' <p> Hello 1, world</p>',
           ' <p> Hello 2, world</p>',
           ' <p> Hello 3, world</p>',
-          ' <p> Hello 4</p>',
-          ' <p> Hello 5</p>',
-          ' </body>',
-          '</html>'
-        ].join('\n');
-        expect(acc).to.equal(expected);
-        done();
-      });
-
-      haystacks.forEach(function (haystack) {
-        replace.write(haystack);
-      });
-
-      replace.end();
-    });
-
-  it('should be able to customize the regexp options',
-    function (done) {
-      var haystacks = [
-        [ '<!DOCTYPE html>',
-          '<html>',
-          ' <head>',
-          '   <title>Test</title>',
-          ' </head>',
-          ' <body>',
-          ' <P> Hello 1</P>',
-          ' <P> Hello 2</'
-        ].join('\n'),
-        [               'P>',
-          ' <P> Hello 3</P>',
-          ' <p> Hello 4</p>',
-          ' <p> Hello 5</p>',
-          ' </body>',
-          '</html>'
-        ].join('\n'),
-      ];
-
-      var acc = '';
-      var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
-      var replace = replaceStream('</P>', ', world</P>', { regExpOptions: 'gm' });
-      replace.on('data', function (data) {
-        acc += data;
-      });
-      replace.on('end', function () {
-        var expected = [
-          '<!DOCTYPE html>',
-          '<html>',
-          ' <head>',
-          '   <title>Test</title>',
-          ' </head>',
-          ' <body>',
-          ' <P> Hello 1, world</P>',
-          ' <P> Hello 2, world</P>',
-          ' <P> Hello 3, world</P>',
           ' <p> Hello 4</p>',
           ' <p> Hello 5</p>',
           ' </body>',
@@ -713,7 +715,7 @@ describe('replace', function () {
         replace.end();
       });
 
-    it('should be able to customize the regexp options using regex',
+    it('should be possible to specify the regexp flags when using a regex',
       function (done) {
         var haystacks = [
           [ '<!DOCTYPE html>',
@@ -736,7 +738,7 @@ describe('replace', function () {
 
         var acc = '';
         var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
-        var replace = replaceStream(/<\/P>/, ', world</P>', { regExpOptions: 'gm' });
+        var replace = replaceStream(/<\/P>/gm, ', world</P>');
         replace.on('data', function (data) {
           acc += data;
         });
