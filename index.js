@@ -122,7 +122,11 @@ function escapeRegExp(s) {
     return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
 }
 
-function matchFromRegex(regex, options) {
+function matchFromRegex(s, options) {
+  var regex = s
+  if (options.regExpOptions)
+    regex = new RegExp(s.source, options.regExpOptions)
+
   // If there is no global flag then there can only be one match
   if (!regex.global) {
     options.limit = 1;
@@ -131,5 +135,8 @@ function matchFromRegex(regex, options) {
 }
 
 function matchFromString(s, options) {
+  if (options.regExpOptions)
+    return new RegExp(escapeRegExp(s), options.regExpOptions)
+
   return new RegExp(escapeRegExp(s), options.ignoreCase === false ? 'gm' : 'gmi')
 }

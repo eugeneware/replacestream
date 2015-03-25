@@ -300,6 +300,60 @@ describe('replace', function () {
       replace.end();
     });
 
+  it('should be able to customize the regexp options - deprecated',
+    function (done) {
+      var haystacks = [
+        [ '<!DOCTYPE html>',
+          '<html>',
+          ' <head>',
+          '   <title>Test</title>',
+          ' </head>',
+          ' <body>',
+          ' <P> Hello 1</P>',
+          ' <P> Hello 2</'
+        ].join('\n'),
+        [               'P>',
+          ' <P> Hello 3</P>',
+          ' <p> Hello 4</p>',
+          ' <p> Hello 5</p>',
+          ' </body>',
+          '</html>'
+        ].join('\n'),
+      ];
+
+      var acc = '';
+      var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
+      var replace = replaceStream('</P>', ', world</P>', { regExpOptions: 'gm' });
+      replace.on('data', function (data) {
+        acc += data;
+      });
+      replace.on('end', function () {
+        var expected = [
+          '<!DOCTYPE html>',
+          '<html>',
+          ' <head>',
+          '   <title>Test</title>',
+          ' </head>',
+          ' <body>',
+          ' <P> Hello 1, world</P>',
+          ' <P> Hello 2, world</P>',
+          ' <P> Hello 3, world</P>',
+          ' <p> Hello 4</p>',
+          ' <p> Hello 5</p>',
+          ' </body>',
+          '</html>'
+        ].join('\n');
+        expect(acc).to.equal(expected);
+        done();
+      });
+
+      haystacks.forEach(function (haystack) {
+        replace.write(haystack);
+      });
+
+      replace.end();
+    });
+
  it('should replace characters specified and not modify partial matches', function (done) {
     var haystack = [
       'ab',
@@ -699,6 +753,60 @@ describe('replace', function () {
             ' <p> Hello 1, world</p>',
             ' <p> Hello 2, world</p>',
             ' <p> Hello 3, world</p>',
+            ' <p> Hello 4</p>',
+            ' <p> Hello 5</p>',
+            ' </body>',
+            '</html>'
+          ].join('\n');
+          expect(acc).to.equal(expected);
+          done();
+        });
+
+        haystacks.forEach(function (haystack) {
+          replace.write(haystack);
+        });
+
+        replace.end();
+      });
+
+    it('should be able to customize the regexp options using regex - deprecated',
+      function (done) {
+        var haystacks = [
+          [ '<!DOCTYPE html>',
+            '<html>',
+            ' <head>',
+            '   <title>Test</title>',
+            ' </head>',
+            ' <body>',
+            ' <P> Hello 1</P>',
+            ' <P> Hello 2</'
+          ].join('\n'),
+          [               'P>',
+            ' <P> Hello 3</P>',
+            ' <p> Hello 4</p>',
+            ' <p> Hello 5</p>',
+            ' </body>',
+            '</html>'
+          ].join('\n'),
+        ];
+
+        var acc = '';
+        var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
+        var replace = replaceStream(/<\/P>/, ', world</P>', { regExpOptions: 'gm' });
+        replace.on('data', function (data) {
+          acc += data;
+        });
+        replace.on('end', function () {
+          var expected = [
+            '<!DOCTYPE html>',
+            '<html>',
+            ' <head>',
+            '   <title>Test</title>',
+            ' </head>',
+            ' <body>',
+            ' <P> Hello 1, world</P>',
+            ' <P> Hello 2, world</P>',
+            ' <P> Hello 3, world</P>',
             ' <p> Hello 4</p>',
             ' <p> Hello 5</p>',
             ' </body>',
