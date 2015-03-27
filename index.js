@@ -11,9 +11,6 @@ function ReplaceStream(search, replace, options) {
   options.encoding = options.encoding || 'utf8';
   options.max_match_len = options.max_match_len || 100;
 
-  if (!isRegex)
-    options.regExpOptions = options.regExpOptions || 'gmi';
-
   var replaceFn = replace;
 
   replaceFn = createReplaceFn(replace, isRegex);
@@ -126,18 +123,20 @@ function escapeRegExp(s) {
 }
 
 function matchFromRegex(s, options) {
-  if (options.regExpOptions) {
-    return new RegExp(s.source, options.regExpOptions)
-  } else {
-    var flags = s.toString().replace(/\/[^\/].*\//, '')
-    // If there is no global flag then there can only be one match
-    if (flags.indexOf('g') < 0) {
-      options.limit = 1;
-    }
-    return new RegExp(s.source, flags)
+  var regex = s
+  if (options.regExpOptions)
+    regex = new RegExp(s.source, options.regExpOptions)
+
+  // If there is no global flag then there can only be one match
+  if (!regex.global) {
+    options.limit = 1;
   }
+  return regex
 }
 
 function matchFromString(s, options) {
-  return new RegExp(escapeRegExp(s), options.regExpOptions);
+  if (options.regExpOptions)
+    return new RegExp(escapeRegExp(s), options.regExpOptions)
+
+  return new RegExp(escapeRegExp(s), options.ignoreCase === false ? 'gm' : 'gmi')
 }
