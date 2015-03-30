@@ -262,5 +262,6 @@ replacestream is only possible due to the excellent work of the following contri
 <tr><th align="left">Eugene Ware</th><td><a href="https://github.com/eugeneware">GitHub/eugeneware</a></td></tr>
 <tr><th align="left">Ryan Mehta</th><td><a href="https://github.com/mehtaphysical">GitHub/mehtaphysical</a></td></tr>
 <tr><th align="left">Tim Chaplin</th><td><a href="https://github.com/tjchaplin">GitHub/tjchaplin</a></td></tr>
+<tr><th align="left">Bryce Gibson</th><td><a href="https://github.com/bryce-gibson">GitHub/bryce-gibson</a></td></tr>
 <tr><th align="left">Romain</th><td><a href="https://github.com/Filirom1">GitHub/Filirom1</a></td></tr>
 </tbody></table>
