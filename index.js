@@ -1,15 +1,19 @@
-var through = require('through');
+'use strict';
 
-module.exports = ReplaceStream;
-function ReplaceStream(search, replace, options) {
+var escapeRegExp = require('escape-string-regexp');
+var objectAssign = require('object-assign');
+var Transform = require('readable-stream/transform');
+
+module.exports = function ReplaceStream(search, replace, options) {
   var tail = '';
   var totalMatches = 0;
   var isRegex = search instanceof RegExp;
 
-  options = options || {};
-  options.limit = options.limit || Infinity;
-  options.encoding = options.encoding || 'utf8';
-  options.max_match_len = options.max_match_len || 100;
+  options = objectAssign({
+    limit: Infinity,
+    encoding: 'utf8',
+    max_match_len: 100
+  }, options);
 
   var replaceFn = replace;
 
@@ -23,7 +27,7 @@ function ReplaceStream(search, replace, options) {
     options.max_match_len = search.length;
   }
 
-  function write(buf) {
+  function transform(buf, enc, cb) {
     var matches;
     var lastPos = 0;
     var runningMatch = '';
@@ -52,7 +56,7 @@ function ReplaceStream(search, replace, options) {
       tail = haystack.slice(lastPos) > options.max_match_len ? haystack.slice(lastPos).slice(0 - options.max_match_len) : haystack.slice(lastPos)
 
     var dataToQueue = getDataToQueue(matchCount,haystack,rewritten,lastPos);
-    this.queue(dataToQueue);
+    cb(null, dataToQueue);
   }
 
   function getDataToAppend(before, match) {
@@ -66,29 +70,29 @@ function ReplaceStream(search, replace, options) {
   }
 
   function getDataToQueue(matchCount, haystack, rewritten, lastPos) {
-    var dataToQueue;
-
     if (matchCount > 0) {
       if (haystack.length > tail.length) {
-        dataToQueue = rewritten + haystack.slice(lastPos, haystack.length - tail.length)
-      } else {
-        dataToQueue = rewritten
+        return rewritten + haystack.slice(lastPos, haystack.length - tail.length);
       }
-    } else {
-      dataToQueue = haystack.slice(0, haystack.length - tail.length)
+
+      return rewritten;
     }
 
-    return dataToQueue;
+    return haystack.slice(0, haystack.length - tail.length);
   }
 
-  function end() {
-    if (tail) this.queue(tail);
-    this.queue(null);
+  function flush(cb) {
+    if (tail) {
+      this.push(tail);
+    }
+    cb();
   }
 
-  var t = through(write, end);
-  return t;
-}
+  return new Transform({
+    transform: transform,
+    flush: flush
+  });
+};
 
 function createReplaceFn(replace, isRegEx) {
   var regexReplaceFunction = function () {
@@ -103,40 +107,35 @@ function createReplaceFn(replace, isRegEx) {
     return newReplace;
   };
 
-  var stringReplaceFunction = function () {
-    return replace;
-  };
-
   if (isRegEx && !(replace instanceof Function)) {
     return regexReplaceFunction;
   }
 
   if (!(replace instanceof Function)) {
-    return stringReplaceFunction
+    return function stringReplaceFunction() {
+      return replace;
+    };
   }
 
-  return replace
+  return replace;
 }
 
-function escapeRegExp(s) {
-    return s.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
-}
-
-function matchFromRegex(s, options) {
-  var regex = s
-  if (options.regExpOptions)
-    regex = new RegExp(s.source, options.regExpOptions)
+function matchFromRegex(regex, options) {
+  if (options.regExpOptions) {
+    regex = new RegExp(regex.source, options.regExpOptions)
+  }
 
   // If there is no global flag then there can only be one match
   if (!regex.global) {
     options.limit = 1;
   }
-  return regex
+  return regex;
 }
 
 function matchFromString(s, options) {
-  if (options.regExpOptions)
-    return new RegExp(escapeRegExp(s), options.regExpOptions)
+  if (options.regExpOptions) {
+    return new RegExp(escapeRegExp(s), options.regExpOptions);
+  }
 
-  return new RegExp(escapeRegExp(s), options.ignoreCase === false ? 'gm' : 'gmi')
+  return new RegExp(escapeRegExp(s), options.ignoreCase === false ? 'gm' : 'gmi');
 }
