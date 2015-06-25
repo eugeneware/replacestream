@@ -2,13 +2,14 @@
   "name": "replacestream",
   "version": "2.1.0",
   "description": "A node.js through stream that does basic streaming text search and replace and is chunk boundary friendly",
-  "main": "index.js",
+  "repository": "eugeneware/replacestream",
+  "author": "Eugene Ware <eugene@noblesamurai.com>",
+  "license": "BSD-3-Clause",
+  "files": [
+    "index.js"
+  ],
   "scripts": {
-    "test": "node_modules/.bin/mocha"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/eugeneware/replacestream"
+    "test": "mocha --growl --full-trace"
   },
   "keywords": [
     "replace",
@@ -19,13 +20,14 @@
     "streaming",
     "search"
   ],
-  "author": "Eugene Ware <eugene@noblesamurai.com>",
-  "license": "BSD",
-  "devDependencies": {
-    "chai": "^1.9.1",
-    "mocha": "^1.21.4"
-  },
   "dependencies": {
-    "through": "~2.3.4"
+    "escape-string-regexp": "^1.0.3",
+    "object-assign": "^3.0.0",
+    "readable-stream": "^2.0.1"
+  },
+  "devDependencies": {
+    "chai": "^3.0.0",
+    "concat-stream": "^1.5.0",
+    "mocha": "^2.2.5"
   }
 }
