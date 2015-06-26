@@ -1,19 +1,26 @@
-var expect = require('chai').expect
-  , through = require('through')
-  , fs = require('fs')
-  , replaceStream = require('..');
+'use strict';
 
-function script(inner) {
-  return [
-    '<script type="text/javascript">',
-    inner,
-    '</script>'
-  ].join('\n');
-}
+var concatStream = require('concat-stream');
+var expect = require('chai').expect;
+var replaceStream = require('..');
 
-describe('replace', function () {
+var script = [
+  '<script type="text/javascript">',
+  'console.log(\'hello\');',
+  'document.addEventListener("DOMContentLoaded", function () {',
+  '  document.body.style.backgroundColor = "red";',
+  '});',
+  '</script>'
+].join('\n');
+
+describe('replacestream', function () {
   it('should be able to replace within a chunk', function (done) {
-    var haystack = [
+    var replace = replaceStream('</head>', script + '</head>')
+    replace.pipe(concatStream({encoding: 'string'}, function(data) {
+      expect(data).to.include(script);
+      done();
+    }));
+    replace.end([
       '<!DOCTYPE html>',
       '<html>',
       ' <head>',
@@ -23,21 +30,7 @@ describe('replace', function () {
       '   <h1>Head</h1>',
       ' </body>',
       '</html>'
-    ].join('\n');
-
-    var acc = '';
-    var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
-    var replace = replaceStream('</head>', inject + '</head>');
-    replace.on('data', function (data) {
-      acc += data;
-    });
-    replace.on('end', function () {
-      expect(acc).to.include(inject);
-      done();
-    });
-
-    replace.write(haystack);
-    replace.end();
+    ].join('\n'));
   });
 
   it('should be able to replace between chunks', function (done) {
@@ -56,16 +49,11 @@ describe('replace', function () {
       ].join('\n'),
     ];
 
-    var acc = '';
-    var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
-    var replace = replaceStream('</head>', inject + '</head>');
-    replace.on('data', function (data) {
-      acc += data;
-    });
-    replace.on('end', function () {
-      expect(acc).to.include(inject);
+    var replace = replaceStream('</head>', script + '</head>')
+    replace.pipe(concatStream({encoding: 'string'}, function(data) {
+      expect(data).to.include(script);
       done();
-    });
+    }));
 
     haystacks.forEach(function (haystack) {
       replace.write(haystack);
@@ -75,7 +63,12 @@ describe('replace', function () {
   });
 
   it('should default to case insensitive string matches', function (done) {
-    var haystack = [
+    var replace = replaceStream('</HEAD>', script + '</head>');
+    replace.pipe(concatStream({encoding: 'string'}, function(data) {
+      expect(data).to.include(script);
+      done();
+    }));
+    replace.end([
       '<!DOCTYPE html>',
       '<html>',
       ' <head>',
@@ -85,25 +78,16 @@ describe('replace', function () {
       '   <h1>Head</h1>',
       ' </body>',
       '</html>'
-    ].join('\n');
-
-    var acc = '';
-    var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
-    var replace = replaceStream('</HEAD>', inject + '</head>');
-    replace.on('data', function (data) {
-      acc += data;
-    });
-    replace.on('end', function () {
-      expect(acc).to.include(inject);
-      done();
-    });
-
-    replace.write(haystack);
-    replace.end();
+    ].join('\n'));
   });
 
   it('should be possible to force case sensitive string matches', function (done) {
-    var haystack = [
+    var replace = replaceStream('</HEAD>', script + '</head>', {ignoreCase: false});
+    replace.pipe(concatStream({encoding: 'string'}, function(data) {
+      expect(data).to.not.include(script);
+      done();
+    }));
+    replace.end([
       '<!DOCTYPE html>',
       '<html>',
       ' <head>',
@@ -113,21 +97,7 @@ describe('replace', function () {
       '   <h1>Head</h1>',
       ' </body>',
       '</html>'
-    ].join('\n');
-
-    var acc = '';
-    var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
-    var replace = replaceStream('</HEAD>', inject + '</head>', { ignoreCase: false });
-    replace.on('data', function (data) {
-      acc += data;
-    });
-    replace.on('end', function () {
-      expect(acc).to.not.include(inject);
-      done();
-    });
-
-    replace.write(haystack);
-    replace.end();
+    ].join('\n'));
   });
 
   it('should be able to handle no matches', function (done) {
@@ -146,16 +116,11 @@ describe('replace', function () {
       ].join('\n'),
     ];
 
-    var acc = '';
-    var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
-    var replace = replaceStream('</head>', inject + '</head>');
-    replace.on('data', function (data) {
-      acc += data;
-    });
-    replace.on('end', function () {
-      expect(acc).to.not.include(inject);
+    var replace = replaceStream('</head>', script + '</head>');
+    replace.pipe(concatStream({encoding: 'string'}, function(data) {
+      expect(data).to.not.include(script);
       done();
-    });
+    }));
 
     haystacks.forEach(function (haystack) {
       replace.write(haystack);
@@ -165,35 +130,21 @@ describe('replace', function () {
   });
 
   it('should be able to handle dangling tails', function (done) {
-    var haystacks = [
-      [ '<!DOCTYPE html>',
-        '<html>',
-        ' <head>',
-        '   <title>Test</title>',
-        ' </he'
-      ].join('\n')
-    ];
-
-    var acc = '';
-    var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
-    var replace = replaceStream('</head>', inject + '</head>');
-    replace.on('data', function (data) {
-      acc += data;
-    });
-    replace.on('end', function () {
-      expect(acc).to.include('</he');
+    var replace = replaceStream('</head>', script + '</head>');
+    replace.pipe(concatStream({encoding: 'string'}, function(data) {
+      expect(data).to.include('</he');
       done();
-    });
-
-    haystacks.forEach(function (haystack) {
-      replace.write(haystack);
-    });
-
-    replace.end();
+    }));
+    replace.end([
+      '<!DOCTYPE html>',
+      '<html>',
+      ' <head>',
+      '   <title>Test</title>',
+      ' </he'
+    ].join('\n'));
   });
 
-  it('should be able to handle multiple searches and replaces',
-    function (done) {
+  it('should be able to handle multiple searches and replaces', function (done) {
       var haystacks = [
         [ '<!DOCTYPE html>',
           '<html>',
@@ -213,13 +164,8 @@ describe('replace', function () {
         ].join('\n'),
       ];
 
-      var acc = '';
-      var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
       var replace = replaceStream('</p>', ', world</p>');
-      replace.on('data', function (data) {
-        acc += data;
-      });
-      replace.on('end', function () {
+      replace.pipe(concatStream({encoding: 'string'}, function(data) {
         var expected = [
           '<!DOCTYPE html>',
           '<html>',
@@ -235,9 +181,9 @@ describe('replace', function () {
           ' </body>',
           '</html>'
         ].join('\n');
-        expect(acc).to.equal(expected);
+        expect(data).to.equal(expected);
         done();
-      });
+      }));
 
       haystacks.forEach(function (haystack) {
         replace.write(haystack);
@@ -267,13 +213,8 @@ describe('replace', function () {
         ].join('\n'),
       ];
 
-      var acc = '';
-      var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
-      var replace = replaceStream('</p>', ', world</p>', { limit: 3 });
-      replace.on('data', function (data) {
-        acc += data;
-      });
-      replace.on('end', function () {
+      var replace = replaceStream('</p>', ', world</p>', {limit: 3})
+      replace.pipe(concatStream({encoding: 'string'}, function(data) {
         var expected = [
           '<!DOCTYPE html>',
           '<html>',
@@ -289,9 +230,9 @@ describe('replace', function () {
           ' </body>',
           '</html>'
         ].join('\n');
-        expect(acc).to.equal(expected);
+        expect(data).to.equal(expected);
         done();
-      });
+      }));
 
       haystacks.forEach(function (haystack) {
         replace.write(haystack);
@@ -321,13 +262,8 @@ describe('replace', function () {
         ].join('\n'),
       ];
 
-      var acc = '';
-      var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
-      var replace = replaceStream('</P>', ', world</P>', { regExpOptions: 'gm' });
-      replace.on('data', function (data) {
-        acc += data;
-      });
-      replace.on('end', function () {
+      var replace = replaceStream('</P>', ', world</P>', {regExpOptions: 'gm'});
+      replace.pipe(concatStream({encoding: 'string'}, function(data) {
         var expected = [
           '<!DOCTYPE html>',
           '<html>',
@@ -343,9 +279,9 @@ describe('replace', function () {
           ' </body>',
           '</html>'
         ].join('\n');
-        expect(acc).to.equal(expected);
+        expect(data).to.equal(expected);
         done();
-      });
+      }));
 
       haystacks.forEach(function (haystack) {
         replace.write(haystack);
@@ -355,89 +291,64 @@ describe('replace', function () {
     });
 
  it('should replace characters specified and not modify partial matches', function (done) {
-    var haystack = [
-      'ab',
-      'a',
-      'a',
-      'b'
-    ].join('\n');
-
-    var acc = '';
-    var replace = replaceStream('ab','Z');
-    replace.on('data', function (data) {
-      acc += data;
-    });
-    replace.on('end', function () {
-        var expected = [
+   var replace = replaceStream('ab','Z');
+   replace.pipe(concatStream({encoding: 'string'}, function(data) {
+      var expected = [
         'Z',
         'a',
         'a',
         'b'
       ].join('\n');
 
-      expect(acc).to.equal(expected);
+      expect(data).to.equal(expected);
       done();
-    });
-
-    replace.write(haystack);
-    replace.end();
+    }));
+    replace.end([
+      'ab',
+      'a',
+      'a',
+      'b'
+    ].join('\n'));
   });
 
   it('should handle partial matches between complete matches', function (done) {
-    var haystack = [
+    var replace = replaceStream('ab','Z');
+    replace.pipe(concatStream({encoding: 'string'}, function(data) {
+        var expected = [
+        'Z',
+        'a',
+        'Z',
+        'b'
+      ].join('\n');
+
+      expect(data).to.equal(expected);
+      done();
+    }));
+    replace.end([
       "ab",
       'a',
       'ab',
       'b'
-    ].join('\n');
-
-    var acc = '';
-    var replace = replaceStream('ab','Z');
-
-    replace.on('data', function (data) {
-      acc += data;
-    });
-    replace.on('end', function () {
-        var expected = [
-        'Z',
-        'a',
-        'Z',
-        'b'
-      ].join('\n');
-
-      expect(acc).to.equal(expected);
-      done();
-    });
-
-    replace.write(haystack);
-    replace.end();
+    ].join('\n'));
   });
 
   it('should only replace characters specified', function (done) {
-    var haystack = [
-      'ab',
-      'a',
-      'b'
-    ].join('\n');
-
-    var acc = '';
     var replace = replaceStream('ab','Z');
-    replace.on('data', function (data) {
-      acc += data;
-    });
-    replace.on('end', function () {
-        var expected = [
+    replace.pipe(concatStream({encoding: 'string'}, function(data) {
+      var expected = [
         'Z',
         'a',
         'b'
       ].join('\n');
 
-      expect(acc).to.equal(expected);
+      expect(data).to.equal(expected);
       done();
-    });
-
-    replace.write(haystack);
-    replace.end();
+    }));
+    replace.end([
+      'ab',
+      'a',
+      'b'
+    ].join('\n'));
   });
 
   it('should be able to use a replace function', function (done) {
@@ -456,22 +367,14 @@ describe('replace', function () {
       ].join('\n'),
     ];
 
-    var acc = '';
-    var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
-
-    function replaceFn(match) {
+    var replace = replaceStream('</head>', function (match) {
       expect(match).to.equal('</head>');
-      return inject + '</head>';
-    }
-
-    var replace = replaceStream('</head>', replaceFn);
-    replace.on('data', function (data) {
-      acc += data;
+      return script + '</head>';
     });
-    replace.on('end', function () {
-      expect(acc).to.include(inject);
+    replace.pipe(concatStream({encoding: 'string'}, function(data) {
+      expect(data).to.include(script);
       done();
-    });
+    }));
 
     haystacks.forEach(function (haystack) {
       replace.write(haystack);
@@ -501,18 +404,10 @@ describe('replace', function () {
         ].join('\n'),
       ];
 
-      var acc = '';
-
       var greetings = ['Hi', 'Hey', 'Gday', 'Bonjour', 'Greetings'];
-      function replaceFn(match) {
-        return greetings.shift();
-      }
 
-      var replace = replaceStream('Hello', replaceFn);
-      replace.on('data', function (data) {
-        acc += data;
-      });
-      replace.on('end', function () {
+      var replace = replaceStream('Hello', greetings.shift.bind(greetings));
+      replace.pipe(concatStream({encoding: 'string'}, function(data) {
         var expected = [
           '<!DOCTYPE html>',
           '<html>',
@@ -528,9 +423,9 @@ describe('replace', function () {
           ' </body>',
           '</html>'
         ].join('\n');
-        expect(acc).to.equal(expected);
+        expect(data).to.equal(expected);
         done();
-      });
+      }));
 
       haystacks.forEach(function (haystack) {
         replace.write(haystack);
@@ -539,7 +434,12 @@ describe('replace', function () {
       replace.end();
     });
     it('should be able to replace within a chunk using regex', function (done) {
-      var haystack = [
+      var replace = replaceStream(/<\/head>/, script + '</head>');
+      replace.pipe(concatStream({encoding: 'string'}, function(data) {
+        expect(data).to.include(script);
+        done();
+      }));
+      replace.end([
         '<!DOCTYPE html>',
         '<html>',
         ' <head>',
@@ -549,21 +449,7 @@ describe('replace', function () {
         '   <h1>Head</h1>',
         ' </body>',
         '</html>'
-      ].join('\n');
-
-      var acc = '';
-      var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
-      var replace = replaceStream(/<\/head>/, inject + '</head>');
-      replace.on('data', function (data) {
-        acc += data;
-      });
-      replace.on('end', function () {
-        expect(acc).to.include(inject);
-        done();
-      });
-
-      replace.write(haystack);
-      replace.end();
+      ].join('\n'));
     });
 
     it('should be able to replace between chunks using regex', function (done) {
@@ -582,15 +468,11 @@ describe('replace', function () {
         ].join('\n'),
       ];
 
-      var acc = '';
       var replace = replaceStream(/fe+d/, 'foooooooood');
-      replace.on('data', function (data) {
-        acc += data;
-      });
-      replace.on('end', function () {
-        expect(acc).to.include('foooooooood');
+      replace.pipe(concatStream({encoding: 'string'}, function(data) {
+        expect(data).to.include('foooooooood');
         done();
-      });
+      }));
 
       haystacks.forEach(function (haystack) {
         replace.write(haystack);
@@ -615,16 +497,11 @@ describe('replace', function () {
         ].join('\n'),
       ];
 
-      var acc = '';
-      var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
-      var replace = replaceStream(/<\/head>/, inject + '</head>');
-      replace.on('data', function (data) {
-        acc += data;
-      });
-      replace.on('end', function () {
-        expect(acc).to.not.include(inject);
+      var replace = replaceStream(/<\/head>/, script + '</head>');
+      replace.pipe(concatStream({encoding: 'string'}, function(data) {
+        expect(data).to.not.include(script);
         done();
-      });
+      }));
 
       haystacks.forEach(function (haystack) {
         replace.write(haystack);
@@ -634,31 +511,19 @@ describe('replace', function () {
     });
 
     it('should be able to handle dangling tails using regex', function (done) {
-      var haystacks = [
-        [ '<!DOCTYPE html>',
-          '<html>',
-          ' <head>',
-          '   <title>Test</title>',
-          ' </he'
-        ].join('\n')
-      ];
-
-      var acc = '';
-      var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
-      var replace = replaceStream(/<\/head>/, inject + '</head>');
-      replace.on('data', function (data) {
-        acc += data;
-      });
-      replace.on('end', function () {
-        expect(acc).to.include('</he');
+      var replace = replaceStream(/<\/head>/, script + '</head>');
+      replace.pipe(concatStream({encoding: 'string'}, function(data) {
+        expect(data).to.include('</he');
         done();
-      });
+      }));
 
-      haystacks.forEach(function (haystack) {
-        replace.write(haystack);
-      });
-
-      replace.end();
+      replace.end([
+        '<!DOCTYPE html>',
+        '<html>',
+        ' <head>',
+        '   <title>Test</title>',
+        ' </he'
+      ].join('\n'));
     });
 
     it('should be able to handle multiple searches and replaces using regex',
@@ -682,13 +547,8 @@ describe('replace', function () {
           ].join('\n'),
         ];
 
-        var acc = '';
-        var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
         var replace = replaceStream(/<\/p>/g, ', world</p>');
-        replace.on('data', function (data) {
-          acc += data;
-        });
-        replace.on('end', function () {
+        replace.pipe(concatStream({encoding: 'string'}, function(data) {
           var expected = [
             '<!DOCTYPE html>',
             '<html>',
@@ -704,9 +564,9 @@ describe('replace', function () {
             ' </body>',
             '</html>'
           ].join('\n');
-          expect(acc).to.equal(expected);
+          expect(data).to.equal(expected);
           done();
-        });
+        }));
 
         haystacks.forEach(function (haystack) {
           replace.write(haystack);
@@ -736,13 +596,8 @@ describe('replace', function () {
           ].join('\n'),
         ];
 
-        var acc = '';
-        var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
         var replace = replaceStream(/<\/p>/g, ', world</p>', { limit: 3 });
-        replace.on('data', function (data) {
-          acc += data;
-        });
-        replace.on('end', function () {
+        replace.pipe(concatStream({encoding: 'string'}, function(data) {
           var expected = [
             '<!DOCTYPE html>',
             '<html>',
@@ -758,9 +613,9 @@ describe('replace', function () {
             ' </body>',
             '</html>'
           ].join('\n');
-          expect(acc).to.equal(expected);
+          expect(data).to.equal(expected);
           done();
-        });
+        }));
 
         haystacks.forEach(function (haystack) {
           replace.write(haystack);
@@ -790,13 +645,8 @@ describe('replace', function () {
           ].join('\n'),
         ];
 
-        var acc = '';
-        var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
-        var replace = replaceStream(/<\/P>/, ', world</P>', { regExpOptions: 'gm' });
-        replace.on('data', function (data) {
-          acc += data;
-        });
-        replace.on('end', function () {
+        var replace = replaceStream(/<\/P>/, ', world</P>', {regExpOptions: 'gm'});
+        replace.pipe(concatStream({encoding: 'string'}, function(data) {
           var expected = [
             '<!DOCTYPE html>',
             '<html>',
@@ -812,9 +662,9 @@ describe('replace', function () {
             ' </body>',
             '</html>'
           ].join('\n');
-          expect(acc).to.equal(expected);
+          expect(data).to.equal(expected);
           done();
-        });
+        }));
 
         haystacks.forEach(function (haystack) {
           replace.write(haystack);
@@ -844,13 +694,8 @@ describe('replace', function () {
           ].join('\n'),
         ];
 
-        var acc = '';
-        var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
         var replace = replaceStream(/<\/P>/gm, ', world</P>');
-        replace.on('data', function (data) {
-          acc += data;
-        });
-        replace.on('end', function () {
+        replace.pipe(concatStream({encoding: 'string'}, function(data) {
           var expected = [
             '<!DOCTYPE html>',
             '<html>',
@@ -866,9 +711,9 @@ describe('replace', function () {
             ' </body>',
             '</html>'
           ].join('\n');
-          expect(acc).to.equal(expected);
+          expect(data).to.equal(expected);
           done();
-        });
+        }));
 
         haystacks.forEach(function (haystack) {
           replace.write(haystack);
@@ -878,19 +723,8 @@ describe('replace', function () {
       });
 
     it('should replace characters specified and not modify partial matches using regex', function (done) {
-      var haystack = [
-        'ab',
-        'a',
-        'a',
-        'b'
-      ].join('\n');
-
-      var acc = '';
       var replace = replaceStream('ab','Z');
-      replace.on('data', function (data) {
-        acc += data;
-      });
-      replace.on('end', function () {
+      replace.pipe(concatStream({encoding: 'string'}, function(data) {
           var expected = [
           'Z',
           'a',
@@ -898,69 +732,55 @@ describe('replace', function () {
           'b'
         ].join('\n');
 
-        expect(acc).to.equal(expected);
+        expect(data).to.equal(expected);
         done();
-      });
-
-      replace.write(haystack);
-      replace.end();
+      }));
+      replace.end([
+        'ab',
+        'a',
+        'a',
+        'b'
+      ].join('\n'));
     });
 
     it('should handle partial matches between complete matches using regex', function (done) {
-      var haystack = [
+      var replace = replaceStream(/ab/g,'Z');
+      replace.pipe(concatStream({encoding: 'string'}, function(data) {
+          var expected = [
+          'Z',
+          'a',
+          'Z',
+          'b'
+        ].join('\n');
+
+        expect(data).to.equal(expected);
+        done();
+      }));
+      replace.end([
         "ab",
         'a',
         'ab',
         'b'
-      ].join('\n');
-
-      var acc = '';
-      var replace = replaceStream(/ab/g,'Z');
-
-      replace.on('data', function (data) {
-        acc += data;
-      });
-      replace.on('end', function () {
-          var expected = [
-          'Z',
-          'a',
-          'Z',
-          'b'
-        ].join('\n');
-
-        expect(acc).to.equal(expected);
-        done();
-      });
-
-      replace.write(haystack);
-      replace.end();
+      ].join('\n'));
     });
 
     it('should only replace characters specified using regex', function (done) {
-      var haystack = [
-        'ab',
-        'a',
-        'b'
-      ].join('\n');
-
-      var acc = '';
       var replace = replaceStream(/ab/,'Z');
-      replace.on('data', function (data) {
-        acc += data;
-      });
-      replace.on('end', function () {
-          var expected = [
+      replace.pipe(concatStream({encoding: 'string'}, function(data) {
+        var expected = [
           'Z',
           'a',
           'b'
         ].join('\n');
 
-        expect(acc).to.equal(expected);
+        expect(data).to.equal(expected);
         done();
-      });
-
-      replace.write(haystack);
-      replace.end();
+      }));
+      replace.end([
+        'ab',
+        'a',
+        'b'
+      ].join('\n'));
     });
 
     it('should be able to use a replace function using regex', function (done) {
@@ -979,25 +799,19 @@ describe('replace', function () {
         ].join('\n'),
       ];
 
-      var acc = '';
-      var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
-
       function replaceFn(match, p1, offset, string) {
         expect(match).to.equal('</head>');
         expect(p1).to.equal('head');
         expect(offset).to.equal(55);
         expect(string).to.equal(haystacks.join(''));
-        return inject + '</head>';
+        return script + '</head>';
       }
 
       var replace = replaceStream(/<\/(head)>/, replaceFn);
-      replace.on('data', function (data) {
-        acc += data;
-      });
-      replace.on('end', function () {
-        expect(acc).to.include(inject);
+      replace.pipe(concatStream({encoding: 'string'}, function(data) {
+        expect(data).to.include(script);
         done();
-      });
+      }));
 
       haystacks.forEach(function (haystack) {
         replace.write(haystack);
@@ -1027,18 +841,10 @@ describe('replace', function () {
           ].join('\n'),
         ];
 
-        var acc = '';
-
         var greetings = ['Hi', 'Hey', 'Gday', 'Bonjour', 'Greetings'];
-        function replaceFn(match) {
-          return greetings.shift();
-        }
 
-        var replace = replaceStream(/Hello/g, replaceFn);
-        replace.on('data', function (data) {
-          acc += data;
-        });
-        replace.on('end', function () {
+        var replace = replaceStream(/Hello/g, greetings.shift.bind(greetings));
+        replace.pipe(concatStream({encoding: 'string'}, function(data) {
           var expected = [
             '<!DOCTYPE html>',
             '<html>',
@@ -1054,9 +860,9 @@ describe('replace', function () {
             ' </body>',
             '</html>'
           ].join('\n');
-          expect(acc).to.equal(expected);
+          expect(data).to.equal(expected);
           done();
-        });
+        }));
 
         haystacks.forEach(function (haystack) {
           replace.write(haystack);
@@ -1066,37 +872,33 @@ describe('replace', function () {
       });
 
       it('should be able to replace captures using $1 notation', function (done) {
-        var haystack = [
-          "ab",
-          'a',
-          'ab',
-          'b'
-        ].join('\n');
-
-        var acc = '';
-        var replace = replaceStream(/(a)(b)/g,'this is $1 and this is $2');
-
-        replace.on('data', function (data) {
-          acc += data;
-        });
-        replace.on('end', function () {
-            var expected = [
+        var replace = replaceStream(/(a)(b)/g, 'this is $1 and this is $2');
+        replace.pipe(concatStream({encoding: 'string'}, function(data) {
+          var expected = [
             'this is a and this is b',
             'a',
             'this is a and this is b',
             'b'
           ].join('\n');
 
-          expect(acc).to.equal(expected);
+          expect(data).to.equal(expected);
           done();
-        });
-
-        replace.write(haystack);
-        replace.end();
-      })
+        }));
+        replace.end([
+          "ab",
+          'a',
+          'ab',
+          'b'
+        ].join('\n'));
+      });
 
   it('should be able to replace when the match is a tail using a regex', function (done) {
-    var haystack = [
+    var replace = replaceStream(/<\/html>/g, script + '</html>');
+    replace.pipe(concatStream({encoding: 'string'}, function(data) {
+      expect(data).to.include(script);
+      done();
+    }));
+    replace.end([
       '<!DOCTYPE html>',
       '<html>',
       ' <head>',
@@ -1106,20 +908,6 @@ describe('replace', function () {
       '   <h1>Head</h1>',
       ' </body>',
       '</html>'
-    ].join('\n');
-
-    var acc = '';
-    var inject = script(fs.readFileSync('./test/fixtures/inject.js'));
-    var replace = replaceStream(/<\/html>/g, inject + '</html>');
-    replace.on('data', function (data) {
-      acc += data;
-    });
-    replace.on('end', function () {
-      expect(acc).to.include(inject);
-      done();
-    });
-
-    replace.write(haystack);
-    replace.end();
+    ].join('\n'));
   });
 });
