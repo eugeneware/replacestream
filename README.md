@@ -245,6 +245,35 @@ maxMatchLen   | 100       | When doing cross-chunk replacing, this sets the maxi
 ignoreCase    | true      | When doing string match (not relevant for regex matching) whether to do a case insensitive search.
 regExpOptions | undefined | (Deprecated) When provided, these flags will be used when creating the search regexes internally. This functionality is deprecated as the flags set on the regex provided are no longer mutated if this is not provided.
 
+## FAQ
+
+### What does "chunk boundary friendly" mean?
+
+It means that a replace should happen even if the string to be replaced is between streaming chunks of data. For example, say I do something like this
+
+```js
+fs.createReadStream(path.join(__dirname, 'happybirthday.txt'))
+  .pipe(replaceStream('birthday', 'earthday'))
+  .pipe(process.stdout);
+```
+
+Here i am trying to replace all instances of `'birthday'` with `'earthday'`. Let's say the first chunk of data that is available is `'happy birth'` and the second chunk of data available is `'day'`. In this case the replace will happen successfully, the same as it would have if the chunk contained the entire string that was to be replaced (e.g. `chunk1 = 'happy' chunk2 = 'birthday'`)
+
+### Does that apply across more than 2 chunks? How does it work with regexes?
+
+It does apply across multiple chunks. By default, however, the maximum match length (`maxMatchLen`) is set to 100 characters. You can increase this by adding `maxMatchLen: x` to your options:
+
+```js
+replacestream('hi', 'bye', {maxMatchLen: 1000})
+```
+
+A string the size of `maxMatchLen` will be saved in memory so it shouldn't be set too high. `maxMatchLen` is what allows us to have a match between chunks. We are saving `maxMatchLen` characters in a string (the last `maxMatchLen` characters from the previous chunks) that we prepend to the current chunk, then attempt to find a match.
+
+As for regex it works exactly the same except you would pass a regular expression into replacestream:
+
+```js
+replacestream(/a+/, 'b')
+```
 
 ## Contributing
 
