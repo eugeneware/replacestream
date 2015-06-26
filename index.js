@@ -12,7 +12,7 @@ module.exports = function ReplaceStream(search, replace, options) {
   options = objectAssign({
     limit: Infinity,
     encoding: 'utf8',
-    max_match_len: 100
+    maxMatchLen: 100
   }, options);
 
   var replaceFn = replace;
@@ -24,7 +24,7 @@ module.exports = function ReplaceStream(search, replace, options) {
     match = matchFromRegex(search, options)
   } else {
     match = matchFromString(search, options);
-    options.max_match_len = search.length;
+    options.maxMatchLen = search.length;
   }
 
   function transform(buf, enc, cb) {
@@ -44,7 +44,7 @@ module.exports = function ReplaceStream(search, replace, options) {
       var regexMatch = matches;
       lastPos = matches.index + regexMatch[0].length;
 
-      if (lastPos > haystack.length && regexMatch[0].length < options.max_match_len) {
+      if (lastPos > haystack.length && regexMatch[0].length < options.maxMatchLen) {
         tail = regexMatch[0]
       } else {
         var dataToAppend = getDataToAppend(before,regexMatch);
@@ -53,7 +53,7 @@ module.exports = function ReplaceStream(search, replace, options) {
     }
 
     if (tail.length < 1)
-      tail = haystack.slice(lastPos) > options.max_match_len ? haystack.slice(lastPos).slice(0 - options.max_match_len) : haystack.slice(lastPos)
+      tail = haystack.slice(lastPos) > options.maxMatchLen ? haystack.slice(lastPos).slice(0 - options.maxMatchLen) : haystack.slice(lastPos)
 
     var dataToQueue = getDataToQueue(matchCount,haystack,rewritten,lastPos);
     cb(null, dataToQueue);
