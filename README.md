@@ -264,4 +264,5 @@ replacestream is only possible due to the excellent work of the following contri
 <tr><th align="left">Tim Chaplin</th><td><a href="https://github.com/tjchaplin">GitHub/tjchaplin</a></td></tr>
 <tr><th align="left">Bryce Gibson</th><td><a href="https://github.com/bryce-gibson">GitHub/bryce-gibson</a></td></tr>
 <tr><th align="left">Romain</th><td><a href="https://github.com/Filirom1">GitHub/Filirom1</a></td></tr>
+<tr><th align="left">Shinnosuke Watanabe</th><td><a href="https://github.com/shinnn">GitHub/shinnn</a></td></tr>
 </tbody></table>
