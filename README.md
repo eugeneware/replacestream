@@ -3,7 +3,7 @@
 A node.js through stream that does basic streaming text search and replace and
 is chunk boundary friendly.
 
-[![build status](https://secure.travis-ci.org/eugeneware/replacestream.png)](http://travis-ci.org/eugeneware/replacestream)
+[![build status](https://secure.travis-ci.org/eugeneware/replacestream.svg)](http://travis-ci.org/eugeneware/replacestream)
 
 ## Installation
 
