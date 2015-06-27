@@ -3,6 +3,7 @@
 A [node.js transform stream](https://nodejs.org/api/stream.html#stream_class_stream_transform) for basic streaming text search/replacement friendy with chunk boundary.
 
 [![build status](https://secure.travis-ci.org/eugeneware/replacestream.svg)](http://travis-ci.org/eugeneware/replacestream)
+[![Coverage Status](https://coveralls.io/repos/eugeneware/replacestream/badge.svg)](https://coveralls.io/r/eugeneware/replacestream)
 
 ## Installation
 
