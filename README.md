@@ -1,13 +1,12 @@
 # replacestream
 
-A node.js through stream that does basic streaming text search and replace and
-is chunk boundary friendly.
+A [node.js transform stream](https://nodejs.org/api/stream.html#stream_class_stream_transform) for basic streaming text search/replacement friendy with chunk boundary.
 
 [![build status](https://secure.travis-ci.org/eugeneware/replacestream.svg)](http://travis-ci.org/eugeneware/replacestream)
 
 ## Installation
 
-Install via npm:
+Install via [npm](https://www.npmjs.com/):
 
 ``` shell
 $ npm install replacestream
