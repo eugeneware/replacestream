@@ -36,8 +36,16 @@ module.exports = function ReplaceStream(search, replace, options) {
     var haystack = tail + buf.toString(options.encoding);
     tail = '';
 
-    while (totalMatches < options.limit &&
-          (matches = match.exec(haystack)) !== null) {
+    while (totalMatches < options.limit) {
+
+      //
+      // For some reason this is necessary to work (at least on v5.1.0).
+      // Otherwise, the lastIndex never updates past the first iteration.
+      match.lastIndex = lastPos
+      //
+
+      matches = match.exec(haystack)
+      if (matches === null) break;
 
       matchCount++;
       var before = haystack.slice(lastPos, matches.index);
