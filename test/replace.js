@@ -872,12 +872,12 @@ describe('replacestream', function () {
       });
 
       it('should be able to replace captures using $1 notation', function (done) {
-        var replace = replaceStream(/(a)(b)/g, 'this is $1 and this is $2');
+        var replace = replaceStream(/(a)(b)/g, 'this is $1 and this is $2 and this is again $1');
         replace.pipe(concatStream({encoding: 'string'}, function(data) {
           var expected = [
-            'this is a and this is b',
+            'this is a and this is b and this is again a',
             'a',
-            'this is a and this is b',
+            'this is a and this is b and this is again a',
             'b'
           ].join('\n');
 

@@ -102,7 +102,7 @@ function createReplaceFn(replace, isRegEx) {
     // And string parameters
     var paramLength = arguments.length - 2;
     for (var i = 1; i < paramLength; i++) {
-      newReplace = newReplace.replace('$' + i, arguments[i] || '')
+      newReplace = newReplace.replace(new RegExp('\\$' + i, 'g'), arguments[i] || '')
     }
     return newReplace;
   };
