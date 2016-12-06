@@ -925,12 +925,12 @@ describe('replacestream', function () {
       expect(recievedChunks.length).to.equal(3)
       expect(recievedChunks[0]).to.have.length(99)
       expect(recievedChunks[1]).to.have.length(50)
-      expect(recievedChunks[1]).to.have.length(100)
+      expect(recievedChunks[2]).to.have.length(100)
       done()
     })
-    replace.write(Buffer.alloc(50))
-    replace.write(Buffer.alloc(49))
-    replace.write(Buffer.alloc(100))
-    replace.end(Buffer.alloc(50))
+    replace.write((new Buffer(50)).fill(0))
+    replace.write((new Buffer(49)).fill(0))
+    replace.write((new Buffer(100)).fill(0))
+    replace.end((new Buffer(50)).fill(0))
   });
 });
