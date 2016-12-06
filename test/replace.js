@@ -916,7 +916,7 @@ describe('replacestream', function () {
     var replace = replaceStream(/REPLACE/, '')
     var replaced = new stream.PassThrough
 
-    let recievedChunks = []
+    var recievedChunks = []
     replace.pipe(replaced)
     replaced.on('data', function(data) {
       recievedChunks.push(data)
