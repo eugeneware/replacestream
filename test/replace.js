@@ -3,6 +3,7 @@
 var concatStream = require('concat-stream');
 var expect = require('chai').expect;
 var replaceStream = require('..');
+var stream = require('stream')
 
 var script = [
   '<script type="text/javascript">',
@@ -909,5 +910,27 @@ describe('replacestream', function () {
       ' </body>',
       '</html>'
     ].join('\n'));
+  });
+
+  it('should push chunks immediately except tail', function (done) {
+    var replace = replaceStream(/REPLACE/, '')
+    var replaced = new stream.PassThrough
+
+    let recievedChunks = []
+    replace.pipe(replaced)
+    replaced.on('data', function(data) {
+      recievedChunks.push(data)
+    })
+    replaced.on('end', function() {
+      expect(recievedChunks.length).to.equal(3)
+      expect(recievedChunks[0]).to.have.length(99)
+      expect(recievedChunks[1]).to.have.length(50)
+      expect(recievedChunks[1]).to.have.length(100)
+      done()
+    })
+    replace.write(Buffer.alloc(50))
+    replace.write(Buffer.alloc(49))
+    replace.write(Buffer.alloc(100))
+    replace.end(Buffer.alloc(50))
   });
 });
