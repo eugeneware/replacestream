@@ -1,6 +1,6 @@
 {
   "name": "replacestream",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "A node.js through stream that does basic streaming text search and replace and is chunk boundary friendly",
   "repository": "eugeneware/replacestream",
   "author": "Eugene Ware <eugene@noblesamurai.com>",
